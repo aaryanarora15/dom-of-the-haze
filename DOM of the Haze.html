@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOM of the Haze</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
+<script async src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--p:#A855F7;--bg:#07040d;--red:#ff2a55;--grn:#3dff9a;--tx:#e6d4ff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font-family:'Share Tech Mono','Fira Code',monospace;overflow-x:hidden}
+body{animation:flick 6s infinite}
+@keyframes flick{0%,92%,100%{opacity:1}93%{opacity:.82}95%{opacity:1}97%{opacity:.9}}
+#fog,#fog2{position:fixed;width:80vmax;height:80vmax;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;background:radial-gradient(#a855f755,transparent 65%);animation:drift 22s ease-in-out infinite alternate}
+#fog{left:-30vmax;top:-20vmax}#fog2{right:-30vmax;bottom:-30vmax;background:radial-gradient(#ff2a5533,transparent 65%);animation-duration:30s}
+@keyframes drift{to{transform:translate(35vw,25vh) scale(1.3)}}
+#crt{position:fixed;inset:0;pointer-events:none;z-index:90;background:repeating-linear-gradient(0deg,#0000 0 2px,#00000055 3px 4px);mix-blend-mode:multiply}
+#vig{position:fixed;inset:0;pointer-events:none;z-index:91;box-shadow:inset 0 0 160px #000}
+.hidden{display:none!important}
+button{font:inherit;color:var(--tx);background:#1a0b2e;border:1px solid var(--p);padding:10px 16px;cursor:pointer;letter-spacing:1px}
+button:hover{background:var(--p);color:#000;box-shadow:0 0 18px var(--p)}
+button:disabled{opacity:.4;pointer-events:none}
+/* INTRO */
+#intro,#how,#end{position:fixed;inset:0;z-index:80;background:#050208f2;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.glitch{font-size:clamp(34px,9vw,96px);margin:0;color:#fff;position:relative;letter-spacing:4px;text-shadow:0 0 25px var(--p);animation:jit 3s infinite}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;left:0;right:0;top:0}
+.glitch::before{color:var(--red);clip-path:inset(0 0 55% 0);animation:g1 1.4s infinite steps(2)}
+.glitch::after{color:#38f0ff;clip-path:inset(55% 0 0 0);animation:g2 1.1s infinite steps(2)}
+@keyframes g1{0%{transform:translate(-4px,0)}50%{transform:translate(5px,-2px)}100%{transform:translate(-2px,2px)}}
+@keyframes g2{0%{transform:translate(4px,0)}50%{transform:translate(-5px,2px)}100%{transform:translate(2px,-2px)}}
+@keyframes jit{0%,90%,100%{transform:none}92%{transform:skewX(12deg)}94%{transform:skewX(-9deg) scale(1.03)}}
+#boot{min-height:150px;margin:22px 0;text-align:left;color:var(--grn);font-size:14px;max-width:640px;line-height:1.7}
+#boot .r{color:var(--red)}
+.drip{position:fixed;top:0;width:6px;background:linear-gradient(#a855f7,#ff2a55);border-radius:0 0 6px 6px;animation:dr 6s infinite ease-in;z-index:81}
+@keyframes dr{0%{height:0}60%{height:30vh}100%{height:0;top:100%}}
+#scare{position:fixed;inset:0;z-index:99;display:none;align-items:center;justify-content:center;font-size:60vmin;background:#a0001e;animation:scare .9s forwards}
+@keyframes scare{0%{transform:scale(.3);opacity:1}70%{transform:scale(1.4);opacity:1}100%{transform:scale(2);opacity:0}}
+.box{border:1px solid var(--p);padding:20px 26px;max-width:620px;background:#0c0618;text-align:left;line-height:1.6;box-shadow:0 0 40px #a855f755}
+.box h2{margin:0 0 8px;color:var(--p)}
+kbd{border:1px solid var(--p);padding:0 5px;color:#fff}
+/* HUD */
+header{position:relative;z-index:5;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #4b2a7a;background:#0a0514cc}
+header b{color:var(--p);letter-spacing:3px}
+#status{color:var(--grn);font-size:13px}
+main{position:relative;z-index:5;padding:14px;display:flex;gap:14px;flex-wrap:wrap}
+body[data-role=radar] .pv,body[data-role=power] .rv{display:none!important}
+.rv{display:flex;gap:14px;flex-wrap:wrap;width:100%}
+#bunker{position:relative;flex:2 1 460px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;border:1px solid var(--p);overflow:hidden;background:linear-gradient(#a855f722 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,#a855f722 1px,transparent 1px) 0 0/40px 40px,#08030f;box-shadow:0 0 30px #a855f744}
+#bunker::after{content:"";position:absolute;width:260%;height:260%;left:-80%;top:-80%;background:conic-gradient(from 0deg,#a855f755,transparent 18%);animation:spin 5s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+#main-power-grid{grid-column:1/-1;text-align:center;padding:10px;border:1px dashed var(--grn);color:var(--grn);background:#04200f;animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 20px #3dff9a66}}
+.bunker-sector{position:relative;min-height:112px;border:1px solid #4b2a7a;background:#120824;display:flex;flex-wrap:wrap;gap:2px;align-items:center;justify-content:center;font-size:28px;transition:.3s}
+.bunker-sector::before{content:attr(id) " // " attr(data-status);position:absolute;top:4px;left:6px;font-size:10px;color:#c9a0ff}
+.bunker-sector::after{content:attr(data-decay) "s";position:absolute;bottom:4px;right:6px;font-size:11px;color:#c9a0ff}
+.bunker-sector[data-status=infected]{border-color:var(--red);box-shadow:inset 0 0 28px #ff2a5577;background:#240818}
+.bunker-sector[data-status=aggressive]{border-color:#ff0;background:#3c0012;animation:rage .45s infinite;font-size:34px}
+.bunker-sector[data-status=sterilized]{border-color:var(--grn);background:#052a18;box-shadow:inset 0 0 30px #3dff9a77}
+@keyframes rage{0%,100%{transform:translate(0)}25%{transform:translate(-2px,1px)}75%{transform:translate(2px,-1px)}}
+zombie-node{display:inline-block;animation:sham .35s infinite alternate}
+zombie-node::before{content:'🧟'}
+@keyframes sham{from{transform:rotate(-12deg) translateY(0)}to{transform:rotate(12deg) translateY(-4px)}}
+.side{flex:1 1 260px;display:flex;flex-direction:column;gap:10px}
+.panel{border:1px solid #4b2a7a;background:#0a0514cc;padding:10px}
+.bar{height:14px;background:#1a0e2b;border:1px solid #4b2a7a}
+.bar i{display:block;height:100%;width:100%;background:var(--grn);transition:width .3s}
+#log{height:180px;overflow:auto;font-size:12px;line-height:1.5}
+#log .r{color:var(--red)}#log .g{color:var(--grn)}
+#pwin{height:10px;margin-top:8px;background:#1a0e2b;display:none}
+#pwin i{display:block;height:100%;background:var(--p);box-shadow:0 0 12px var(--p)}
+#pwin.on{display:block}#pwin.on i{animation:shrink 3s linear forwards}
+@keyframes shrink{from{width:100%}to{width:0}}
+#banner{min-height:20px;margin-top:6px;color:#fff}
+/* power tab */
+.pv{display:flex;gap:18px;flex-wrap:wrap;width:100%;justify-content:center;align-items:flex-start}
+#reactor{--v:100;--c:var(--grn);width:230px;height:230px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--v)*1%),#1a0e2b 0);display:grid;place-items:center;box-shadow:0 0 40px var(--c);animation:beat 1.2s infinite}
+#reactor.crit{--c:var(--red);animation-duration:.4s}
+@keyframes beat{50%{transform:scale(1.04)}}
+#reactor div{width:180px;height:180px;border-radius:50%;background:#07040d;display:grid;place-items:center;font-size:42px}
+#scr{display:flex;gap:6px;align-items:flex-end;height:60px}
+#scr i{width:18px;background:var(--p);transition:height .3s}
+#beacon{position:fixed;left:30px;bottom:30px;width:64px;height:64px;border-radius:50%;background:radial-gradient(#fff,var(--p) 50%,#4b1a8a);box-shadow:0 0 30px var(--p);cursor:grab;touch-action:none;display:grid;place-items:center;z-index:70;user-select:none;font-size:26px}
+#edge{position:fixed;right:0;top:0;bottom:0;width:6px;background:var(--p);box-shadow:0 0 25px var(--p);z-index:60;animation:pulse 1.4s infinite}
+/* overlays */
+#blackout{position:fixed;inset:0;z-index:70;background:#000;display:none;align-items:center;justify-content:center;text-align:center;color:var(--red);font-size:22px;padding:30px;animation:flick .8s infinite}
+#blackout.on{display:flex}
+#lockdown{position:fixed;inset:0;z-index:65;pointer-events:none;display:none;background:radial-gradient(transparent 40%,#ff0030aa);animation:lk .5s infinite alternate}
+#lockdown.on{display:block}#lockdown::after{content:"SECURITY LOCKOUT — CORE BREACHED";position:absolute;top:30%;width:100%;text-align:center;font-size:clamp(22px,5vw,54px);color:#fff;text-shadow:0 0 20px var(--red)}
+@keyframes lk{to{opacity:.35}}
+.laser{position:fixed;left:-30vw;width:30vw;height:6px;z-index:66;background:linear-gradient(90deg,transparent,#fff,var(--p));box-shadow:0 0 25px 6px var(--p);animation:sweep 2.2s linear forwards}
+@keyframes sweep{to{left:100vw}}
+@media (prefers-reduced-motion:reduce){body,.glitch,#fog,#fog2{animation:none}}
+</style><style>
+/* REALISM PASS: desaturated, gritty, cinematic */
+:root{--p:#8b5fbf;--bg:#050607;--red:#b3201f;--grn:#6f9a6a;--tx:#c9c4b8}
+html,body{font-family:'Special Elite','Share Tech Mono',monospace}
+body{animation:none}
+#fog,#fog2{opacity:.5}#fog2{background:radial-gradient(#6a2c8a44,transparent 65%)}
+#crt{background:repeating-linear-gradient(0deg,#0000 0 3px,#0000002a 3px 4px);mix-blend-mode:normal;opacity:.5}
+#grain{position:fixed;inset:-50%;z-index:92;pointer-events:none;opacity:.16;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");animation:gr .5s steps(4) infinite}
+@keyframes gr{25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
+button{background:#14110f;border:1px solid #5a5248;color:#d8d2c4;letter-spacing:2px;font-family:'Share Tech Mono',monospace}
+button:hover{background:#d8d2c4;color:#000;box-shadow:none}
+#intro{background:radial-gradient(ellipse at 50% 100%,#3a1850 0,#120a1a 45%,#030203 80%);overflow:hidden}
+#intro::before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle 260px at var(--mx,50%) var(--my,60%),transparent 0,#000c 65%,#000 100%)}
+#horde{position:absolute;left:0;right:0;bottom:0;height:50vh;display:flex;justify-content:space-around;align-items:flex-end;z-index:1}
+.zf{width:8vw;max-width:90px;height:14vw;max-height:140px;fill:#000;filter:drop-shadow(0 0 2px #5b2a7a);transform-origin:bottom;animation:walk 16s linear infinite}
+@keyframes walk{from{transform:scale(.4);opacity:.15}to{transform:scale(2.2);opacity:1}}
+#intro .glitch{font-family:'Special Elite';font-size:clamp(34px,8vw,84px);letter-spacing:.14em;text-shadow:0 0 30px #6a2c8a,0 2px 0 #000;animation:none;opacity:0;transition:opacity 3.5s;z-index:4;position:relative}
+#intro .glitch.show{opacity:1}
+.glitch::before,.glitch::after{display:none}.drip{display:none}
+#boot{font-family:'Special Elite';color:#c8c2b8;font-size:clamp(15px,2.2vw,20px);text-align:center;max-width:680px;min-height:170px;z-index:4;position:relative;text-shadow:0 0 6px #000}
+#boot .r{color:#c0392b}#pick{position:relative;z-index:4}
+.box{border:1px solid #3d362d;background:#0b0a09;box-shadow:0 0 60px #000;max-width:700px;max-height:90vh;overflow:auto;font-family:'Share Tech Mono',monospace}
+.box h2{color:#b3201f;letter-spacing:3px;font-family:'Special Elite'}
+.story{font-family:'Special Elite';color:#d8d2c4;border-left:2px solid var(--red);padding-left:12px}
+header{background:#0b0a09;border-bottom:1px solid #2d2823}header b{color:#c9c4b8;font-family:'Special Elite'}
+.panel{background:#0b0a09;border-color:#2d2823}
+#bunker{border:1px solid #3d362d;box-shadow:inset 0 0 60px #000;background:linear-gradient(#ffffff08 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,#ffffff08 1px,transparent 1px) 0 0/40px 40px,#0a0b0a}
+#bunker::after{background:conic-gradient(from 0deg,#6f9a6a33,transparent 15%)}
+#main-power-grid{border:1px solid #6f9a6a;background:#0c150c;color:#9bc695;animation:none}
+.bunker-sector{background:#0e0e0d;border:1px solid #3d362d;overflow:hidden;font-size:0}
+.bunker-sector::before,.bunker-sector::after{color:#8a8478}
+.bunker-sector[data-status=infected]{background:radial-gradient(#3a0a0a,#120606);border-color:#7a1b1a;box-shadow:inset 0 0 30px #000}
+.bunker-sector[data-status=aggressive]{background:repeating-linear-gradient(45deg,#2a0505 0 10px,#3b0a0a 10px 20px);border-color:#c9a227}
+.bunker-sector[data-status=sterilized]{background:#0d1a10;border-color:#4d7a4d;box-shadow:none}
+zombie-node{width:30px;height:46px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 60'><g fill='%231a1010' stroke='%23805050' stroke-width='.8'><circle cx='20' cy='9' r='7'/><path d='M11 18h18l3 20h-5v20h-5V42h-2v16h-5V38H8z'/><path d='M12 21L1 31l3 3 11-9zM28 21l11 10-3 3-11-9z'/></g><circle cx='17' cy='8' r='1.4' fill='%23ff2a2a'/><circle cx='23' cy='8' r='1.4' fill='%23ff2a2a'/></svg>") center/contain no-repeat;filter:drop-shadow(0 0 3px #7a1b1a)}
+zombie-node::before{content:none}
+#reactor{box-shadow:0 0 25px var(--c)}
+#beacon{width:44px;height:44px;font-size:0;background:radial-gradient(#fff 0,#ffb347 35%,#c0392b 70%,transparent 72%);box-shadow:0 0 40px 10px #ff6a2a88;animation:flare .15s infinite alternate}
+@keyframes flare{to{box-shadow:0 0 55px 14px #ff6a2a55}}
+#edge{background:#ff8a3a;box-shadow:0 0 18px #ff8a3a}
+.laser{background:linear-gradient(90deg,transparent,#fff,#ffb347);box-shadow:0 0 25px 6px #ff7a2a}
+#scare{background:#4a0000}#scare svg{fill:#000;filter:drop-shadow(0 0 20px #f00)}
+#lockdown::after{font-family:'Special Elite'}
+#sub{position:fixed;left:0;right:0;bottom:6vh;text-align:center;z-index:85;font-family:'Special Elite';font-size:clamp(15px,2vw,20px);color:#e8e2d4;text-shadow:0 0 6px #000,0 0 14px #000;opacity:0;transition:opacity 1s;padding:0 20px;pointer-events:none}#sub.on{opacity:1}
+#intro{background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='xMidYMax slice'><g fill='%2310091a'><rect x='0' y='90' width='55' height='110'/><rect x='55' y='60' width='45' height='140'/><rect x='100' y='105' width='60' height='95'/><rect x='160' y='45' width='50' height='155'/><rect x='210' y='85' width='55' height='115'/><rect x='265' y='65' width='50' height='135'/><rect x='315' y='100' width='85' height='100'/></g><g fill='%23d9a441' opacity='.6'><rect x='66' y='80' width='6' height='8'/><rect x='174' y='70' width='6' height='8'/><rect x='282' y='90' width='6' height='8'/><rect x='120' y='125' width='6' height='8'/><rect x='228' y='110' width='6' height='8'/><rect x='340' y='120' width='6' height='8'/></g></svg>") center bottom/100% auto no-repeat,radial-gradient(ellipse at 50% 100%,#4a1d5e 0,#150b1f 55%,#030203 85%)}
+.bunker-sector{min-height:134px}zombie-node{width:44px;height:73px}
+#obj{font-size:13px;line-height:1.5;color:#e8e2d4}
+.bunker-sector[data-survivor]{box-shadow:inset 0 0 0 2px #4a90e2}.bunker-sector[data-locked=true]{outline:2px dashed #c9a227;outline-offset:-4px}
+body{--g:0}
+main{filter:hue-rotate(calc(var(--g)*35deg)) saturate(calc(1 + var(--g)*.6))}
+body.g1 main{animation:gl1 .9s infinite steps(2)}body.g2 main{animation:gl2 .5s infinite steps(2)}
+@keyframes gl1{0%,88%{transform:none}90%{transform:translate(-3px,1px) skewX(2deg)}94%{transform:translate(4px,-1px)}100%{transform:none}}
+@keyframes gl2{0%,70%{transform:none}75%{transform:translate(-8px,2px) skewX(5deg)}85%{transform:translate(9px,-3px) scale(1.01)}100%{transform:none}}
+body.g2 header b,body.g2 #obj{text-shadow:2px 0 #f0f,-2px 0 #0ff}
+body.col main{animation:gl2 .15s infinite;filter:invert(.9) hue-rotate(180deg)}
+#tear{position:fixed;inset:0;z-index:88;pointer-events:none;opacity:calc(var(--g)*.6);background:repeating-linear-gradient(0deg,transparent 0 38px,#a855f733 38px 41px,transparent 41px 120px);animation:tear 1.3s linear infinite;mix-blend-mode:screen}@keyframes tear{to{background-position:0 120px}}
+.bunker-sector[data-ghost=infected]{outline:2px dotted #e04040;outline-offset:-3px}.bunker-sector[data-ghost=aggressive]{outline:2px dotted #ffd34d;outline-offset:-3px}.bunker-sector[data-ghost=sterilized]{outline:2px dotted #6fd08a;outline-offset:-3px}
+#loading{position:fixed;inset:0;z-index:82;background:radial-gradient(#1a1410,#050403);display:flex;justify-content:center;padding:3vh 3vw}
+.lwrap{width:min(1100px,100%);display:flex;flex-direction:column;gap:8px}
+.lhead h1{margin:0;font-family:'Special Elite';color:#d9531e;font-size:clamp(24px,4vw,44px);letter-spacing:2px;text-shadow:0 2px 0 #000}
+.sub1{color:#fff;letter-spacing:2px;font-size:15px}.sub2{color:#9a9285;font-size:13px}
+.lgrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(5,1fr);gap:10px;padding:10px;background:#cfc3a8;box-shadow:0 0 60px #000,inset 0 0 40px #5a4a30;transform:rotate(-.25deg)}
+.pn{position:relative;overflow:hidden;background:#000;box-shadow:inset 0 0 0 3px #1a1410,0 2px 8px #000}
+.pn svg{width:100%;height:100%;display:block;animation:kb 16s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.12) translate(-1.5%,1%)}}
+.pn::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(transparent 50%,#000b),repeating-linear-gradient(0deg,#0000 0 2px,#0003 2px 3px)}
+.win{animation:wf 3s infinite steps(1)}@keyframes wf{0%,100%{opacity:1}40%{opacity:.35}45%{opacity:1}80%{opacity:.6}}
+.lrow{display:flex;justify-content:space-between;font-size:13px;color:#e8e2d4}#lnet{color:#8a8478}
+#lbar{height:3px;background:#2a2420;margin:6px 0}#lfill{display:block;height:100%;width:0;background:#e0702a;box-shadow:0 0 10px #e0702a}
+#ltip{font-size:12px;color:#8a8478}#lgo{margin-top:8px}
+@media(max-width:700px){.lgrid{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(4,1fr)}.pn{grid-area:auto!important}}
+/* cinematic key-art scene */
+.lgrid{display:none!important}
+.lwrap{position:relative}.lhead{position:absolute;left:18px;top:14px;z-index:7;text-shadow:0 2px 6px #000}
+.scene{position:relative;flex:1;min-height:44vh;overflow:hidden;background:#000;box-shadow:0 0 60px #000}
+.scene::before,.scene::after{content:"";position:absolute;left:0;right:0;height:5%;background:#000;z-index:6}.scene::before{top:0}.scene::after{bottom:0}
+.stage{position:absolute;inset:0;transform-origin:42% 40%;animation:push 18s ease-out forwards}
+@keyframes push{from{transform:scale(1)}to{transform:scale(1.1)}}
+.sky{position:absolute;inset:0 0 70% 0;background:radial-gradient(ellipse at 40% 100%,#ffc46a 0,#e0602a 18%,#7a2a1a 45%,#1a0d12 85%)}
+.ruins{position:absolute;left:0;right:0;top:calc(30% - 118px);height:120px;width:100%}
+.floorwrap{position:absolute;left:0;right:0;bottom:0;height:70%;perspective:900px;overflow:hidden;background:#150e0b}
+.floor{position:absolute;left:-80%;width:260%;top:0;height:650px;transform-origin:50% 0;transform:rotateX(75deg);background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect width='120' height='120' fill='%231c1411'/><g stroke='%23000' stroke-width='1.5'><rect x='3' y='3' width='34' height='26' rx='9' fill='%23473830'/><rect x='41' y='4' width='40' height='24' rx='10' fill='%23382b25'/><rect x='85' y='3' width='32' height='27' rx='9' fill='%2352423a'/><rect x='-10' y='33' width='36' height='26' rx='9' fill='%233b2e27'/><rect x='30' y='34' width='38' height='25' rx='10' fill='%234d3d34'/><rect x='72' y='33' width='36' height='26' rx='9' fill='%23362a24'/><rect x='3' y='63' width='38' height='26' rx='9' fill='%23524238'/><rect x='45' y='64' width='34' height='25' rx='10' fill='%23402f28'/><rect x='83' y='63' width='34' height='27' rx='9' fill='%23483930'/><rect x='-8' y='93' width='34' height='24' rx='9' fill='%23382b25'/><rect x='30' y='94' width='40' height='24' rx='10' fill='%234a3a31'/><rect x='74' y='93' width='36' height='26' rx='9' fill='%233e3029'/></g></svg>") 0 0/120px 120px;animation:walk 14s linear infinite}
+@keyframes walk{to{background-position:0 360px}}
+.floorwrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 40% 0,#ff8a3add,transparent 55%),linear-gradient(to top,#000 0,#000a 30%,transparent 75%)}
+.crew{position:absolute;left:18%;width:36%;top:calc(30% - 76px);z-index:2}
+.leg{position:absolute;right:5%;top:-8%;height:112%;z-index:3;filter:drop-shadow(0 0 18px #000);animation:sway 7s ease-in-out infinite alternate;transform-origin:50% 0}
+@keyframes sway{from{transform:rotate(-.6deg)}to{transform:rotate(.8deg) translateX(4px)}}
+.flare{position:absolute;left:8%;width:62%;top:29%;height:3px;z-index:4;background:linear-gradient(90deg,transparent,#ffb25a,#fff,#ffb25a,transparent);mix-blend-mode:screen;filter:blur(1px);animation:fl 4s infinite alternate}
+@keyframes fl{from{opacity:.5}to{opacity:1}}
+.dust{position:absolute;inset:0;z-index:5;pointer-events:none}
+.dust i{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffcf90;filter:blur(.5px);animation:df linear infinite}
+@keyframes df{to{transform:translate(60px,-120px)}}
+.vg{position:absolute;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 140px 40px #000}
+#how{display:none!important}
+#mbtn{padding:4px 10px;font-size:12px}
+#man{position:fixed;inset:0;z-index:84;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{width:min(560px,100%);background:#0d0b09;border:1px solid #3d362d;box-shadow:0 0 60px #000}
+.mtabs{display:flex;flex-wrap:wrap;border-bottom:1px solid #2d2823}
+.mtabs button{border:0;border-right:1px solid #2d2823;background:none;padding:10px 12px;font-size:12px;letter-spacing:2px;color:#8a8478}
+.mtabs button:hover{background:#1a1512;color:#e8e2d4;box-shadow:none}
+.mtabs button.on{color:#e8e2d4;background:#1a1512;box-shadow:inset 0 -2px #b3201f}
+#mx{margin-left:auto;border-right:0!important}
+#mbody{padding:18px 22px 22px;min-height:240px;font-family:'Share Tech Mono',monospace;line-height:1.7;font-size:14px;color:#c9c4b8}
+#mbody h3{margin:0 0 12px;font-family:'Special Elite';color:#b3201f;letter-spacing:3px;font-weight:normal;font-size:20px}
+#mbody ul,#mbody ol{margin:0;padding-left:20px}#mbody li{margin-bottom:9px}
+#mbody code{border:1px solid #4a3d5a;padding:0 5px;color:#d8c8f0;background:#150f1c}
+#mbody .warn{color:#d9533a}#mbody .dim{color:#8a8478;font-size:12px;margin-top:14px}
+#brief{position:fixed;inset:0;z-index:84;background:#000c;display:flex;align-items:center;justify-content:center;padding:16px}
+.bhd{padding:12px 22px;border-bottom:1px solid #2d2823;font-family:'Special Elite';letter-spacing:4px;color:#b3201f}
+#bbody{padding:18px 22px 22px;font-family:'Share Tech Mono',monospace;line-height:1.6;color:#c9c4b8}
+#bbody .story{margin:0;font-family:'Special Elite';color:#d8d2c4;border-left:2px solid var(--red);padding-left:12px}
+.bsteps{list-style:none;counter-reset:s;margin:16px 0;padding:0}
+.bsteps li{counter-increment:s;display:flex;flex-direction:column;padding:10px 0 10px 44px;position:relative;border-top:1px solid #2d2823}
+.bsteps li::before{content:counter(s);position:absolute;left:6px;top:10px;width:26px;height:26px;border:1px solid #b3201f;text-align:center;line-height:26px;color:#e8e2d4}
+.bsteps b{color:#e8e2d4;letter-spacing:1px}.bsteps span{color:#8a8478;font-size:13px}
+#bmode{color:#8a8478;font-size:12px;margin-bottom:14px}
+body.solo .pv:not(#beacon):not(#edge){display:flex!important}body.solo #beacon{display:grid!important}body.solo #edge{display:block!important}
+body.solo main{flex-direction:column}
+body.lowpwr #bunker{filter:brightness(.35)}
+#lkbox{position:fixed;inset:0;z-index:86;background:#000c;display:flex;align-items:center;justify-content:center;padding:16px}
+#lkbox textarea{width:100%;height:64px;background:#000;color:#d8d2c4;border:1px solid #5a5248;font:11px 'Share Tech Mono',monospace;margin:4px 0 10px}
+#lkbox .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}#lkst{color:#d9a441;font-size:12px;min-height:18px}#lbtn{padding:4px 10px;font-size:12px}
+zombie-node{background:none;width:34px;height:56px;filter:drop-shadow(0 0 4px #7a1b1a)}zombie-node svg{display:block}
+.zf{filter:brightness(.55) drop-shadow(0 0 3px #5b2a7a)}#scare svg{filter:drop-shadow(0 0 25px #f00) saturate(1.3)}
+</style></head>
+<body data-role="">
+<div id="fog"></div><div id="fog2"></div><div id="crt"></div><div id="vig"></div>
+
+<!-- INTRO: opening animation. Audio can only start after the click below (autoplay rules). -->
+<section id="intro">
+  <svg width="0" height="0" style="position:absolute"></svg>
+  <div id="horde"><svg class="zf" style="animation-delay:-2s"><use href="#zs"/></svg><svg class="zf" style="animation-delay:-9s"><use href="#zs"/></svg><svg class="zf" style="animation-delay:-5s"><use href="#zs"/></svg><svg class="zf" style="animation-delay:-13s"><use href="#zs"/></svg><svg class="zf" style="animation-delay:-7s"><use href="#zs"/></svg><svg class="zf" style="animation-delay:-11s"><use href="#zs"/></svg></div>
+  <h1 class="glitch" data-t="DOM OF THE HAZE">DOM OF THE HAZE</h1>
+  <div id="boot"></div>
+  <div id="pick" class="hidden">
+    <p style="color:#c9a0ff;margin-top:0">Pick a station. Open this page again in a second tab for the other one.</p>
+    <div id="menuBest" style="font-family:'Special Elite',monospace;color:#d9a441;font-size:clamp(16px,2.2vw,22px);letter-spacing:2px;margin:0 0 16px"></div><button id="bRadar">ENTER AS RADAR &amp; DEFENSE</button>
+    <button id="bPower">ENTER AS POWER &amp; SCRUBBERS</button><br><br><button id="bLink">MULTIPLAYER</button>
+  </div>
+</section>
+<div id="scare"><svg style="height:95vh;width:60vh"><use href="#zs"/></svg></div><div id="grain"></div><div id="tear"></div><svg width="0" height="0" style="position:absolute"><symbol id="zs" viewBox="0 0 60 100"><g stroke="#0b0907" stroke-width="1.5" stroke-linejoin="round"><ellipse cx="30" cy="98" rx="20" ry="2.2" fill="#000" opacity=".45" stroke="none"/><path d="M19 56h12l-2 38H18z" fill="#3a3a36"/><path d="M31 56h12l4 36H36z" fill="#2c2c28"/><path d="M20 72h7l-1 6-6-1z" fill="#8fa08a"/><path d="M16 94h14v5H15zM35 92h15v6H34z" fill="#1d1814"/><path d="M16 29q14-7 28 0l4 26-4 3-4-4-4 5-4-4-4 5-4-5-4 4-4-3z" fill="#4a2a24"/><path d="M35 29q10 3 12 26l-3 3-4-4z" fill="#331c18" stroke="none"/><path d="M22 38q4-3 7 2l-2 6-5-2z" fill="#6b3a30" stroke="none"/><path d="M26 42l5-2 3 4-4 4-5-2z" fill="#7a1010"/><path d="M17 31L7 40l4 5 9-8z" fill="#4a2a24"/><path d="M9 41L3 28l5-2 7 14z" fill="#9fb09c"/><path d="M3 28q-3-6 1-8l3 1-1 6z" fill="#8da08a"/><path d="M43 31l9 11-4 4-8-9z" fill="#4a2a24"/><path d="M50 44l3 18-5 1-3-16z" fill="#9fb09c"/><path d="M48 63q1 6 5 5l1-5z" fill="#8da08a"/><path d="M26 24h8v8h-8z" fill="#87997f"/><g transform="rotate(8 30 15)"><path d="M21 8q9-9 18 0 2 8-1 14l-3 4H25l-3-4q-3-6-1-14z" fill="#a6b7a2"/><path d="M34 7q5 6 4 15l-3 4h-4z" fill="#8a9c86" stroke="none"/><path d="M21 9q3-6 9-6 6 0 9 6-5-3-9-3-4 0-9 3z" fill="#17120e"/><ellipse cx="26" cy="13" rx="3.2" ry="3.6" fill="#1b1612" stroke="none"/><ellipse cx="34" cy="13" rx="3.2" ry="3.6" fill="#1b1612" stroke="none"/><circle cx="26" cy="13.4" r="1.6" fill="#d8dcd0" stroke="none"/><circle cx="34" cy="13.4" r="1.6" fill="#d8dcd0" stroke="none"/><circle cx="26" cy="13.6" r=".6" fill="#111" stroke="none"/><circle cx="34" cy="13.6" r=".6" fill="#111" stroke="none"/><path d="M30 15l-1.500 4h3z" fill="#2a2018" stroke="none"/><path d="M24 20q6 6 12 0l-1 5q-5 3-10 0z" fill="#2a0a0a"/><path d="M25 20.500h10" stroke="#e8e2c8" stroke-width="2" stroke-dasharray="1.600 .6" fill="none"/><path d="M26 24h8" stroke="#e8e2c8" stroke-width="1.500" stroke-dasharray="1.400 .7" fill="none"/><path d="M33 25q1 5 0 8" stroke="#7a1010" stroke-width="1.400" fill="none"/></g></g></symbol><symbol id="zsold" viewBox="0 0 60 100"><ellipse cx="30" cy="98" rx="20" ry="2.2" fill="#000" opacity=".5"/><path d="M19 56h12l-2 38H19z" fill="#2a2823"/><path d="M31 56h12l3 36H35z" fill="#23221e"/><path d="M20 84h9l-.4 10h-8.4z" fill="#7d8a6a"/><path d="M35 83h10l1 9H35.500z" fill="#74805f"/><path d="M17 94h13v4H16zM34 92h14v5H33z" fill="#15110d"/><path d="M17 29q13-6 26 0l3 28H14z" fill="#3c4033"/><path d="M24 36q5 7 3 17-4-8-3-17z" fill="#6b0f0f"/><path d="M33 40h8M33 44h8M33 48h7" stroke="#a9b392" stroke-width="1.2" fill="none" opacity=".8"/><path d="M17 30L6 44l-2 18 4 1 2-15 10-10z" fill="#8a9578"/><path d="M43 30l11 13 1 19-4 0-1-16-9-9z" fill="#85916f"/><circle cx="6" cy="64" r="3.2" fill="#6f7b5c"/><circle cx="53" cy="64" r="3.2" fill="#6f7b5c"/><path d="M8 50l3 1-1 4z" fill="#5c0c0c"/><g transform="rotate(-12 30 20)"><path d="M26 22h8v8h-8z" fill="#8a9578"/><ellipse cx="30" cy="14" rx="9.500" ry="11" fill="#9aa584"/><path d="M20 11q10-12 20 0l-3-4q-7-4-14 0z" fill="#2a2118"/><ellipse cx="26" cy="14" rx="2.800" ry="3.300" fill="#140f0c"/><ellipse cx="34.500" cy="14" rx="2.800" ry="3.300" fill="#140f0c"/><circle cx="26" cy="14.500" r=".9" fill="#d9d89a"/><circle cx="34.500" cy="14" r=".9" fill="#d9d89a"/><path d="M29 17l1 3h1l1-3z" fill="#4a3d30"/><path d="M25 21q5 5 11 0v4q-5 5-11 0z" fill="#200808"/><path d="M26 21.500h9" stroke="#d6cfa4" stroke-width="1" stroke-dasharray="1.200 .8" fill="none"/><path d="M36 15l4 4-2 1.500-3.500-3.500z" fill="#7a1010"/><path d="M29 25v7" stroke="#6b0f0f" stroke-width="1.200" fill="none"/></g></symbol></svg><div id="sub"></div>
+
+<!-- LOADING SCREEN: comic-panel mission briefing -->
+<section id='loading' class='hidden'><div class='lwrap'>
+ <div class='lhead'><h1>DAY 11</h1><div class='sub1'>QUARANTINE STATION 9</div><div class='sub2'>HARBOR DISTRICT</div></div>
+ <div class='lgrid'>
+  <div class='pn' style='grid-area:1/1/3/4'><svg viewBox='0 0 300 160' preserveAspectRatio='xMidYMid slice'><defs><radialGradient id='la' cx='45%' cy='55%' r='60%'><stop offset='0' stop-color='#ff9b3d' stop-opacity='.9'/><stop offset='.5' stop-color='#7a3512' stop-opacity='.6'/><stop offset='1' stop-color='#0a0504'/></radialGradient></defs><rect width='300' height='160' fill='#1a0f0a'/><g fill='#3a2414'><rect y='20' width='300' height='6'/><rect x='40' y='26' width='5' height='100'/><rect x='120' y='26' width='5' height='100'/><rect x='200' y='26' width='5' height='100'/><rect x='260' y='26' width='5' height='100'/></g><rect y='118' width='300' height='42' fill='#24160d'/><rect width='300' height='160' fill='url(#la)'/><g fill='#050303'><circle cx='135' cy='62' r='7'/><path d='M125 70q10-4 20 0l6 52h-32z'/></g><circle cx='150' cy='95' r='3' fill='#ffb060'/></svg></div>
+  <div class='pn' style='grid-area:3/1/6/4'><svg viewBox='0 0 300 260' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='lb' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#5c5a3a'/><stop offset='.6' stop-color='#2a2418'/><stop offset='1' stop-color='#0c0806'/></linearGradient><linearGradient id='lf' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#a855f700'/><stop offset='1' stop-color='#6a2c8acc'/></linearGradient></defs><rect width='300' height='260' fill='url(#lb)'/><g fill='#14100d'><rect x='70' y='110' width='140' height='130'/><rect x='120' y='60' width='40' height='60'/><path d='M115 62L140 25 165 62zM66 110L90 78 114 110zM166 110L190 74 214 110z'/><rect x='80' y='100' width='20' height='20'/><rect x='180' y='96' width='20' height='24'/></g><g class='win' fill='#f2b14a'><rect x='130' y='72' width='5' height='8'/><rect x='145' y='72' width='5' height='8'/><rect x='84' y='124' width='6' height='9'/><rect x='100' y='124' width='6' height='9'/><rect x='116' y='124' width='6' height='9'/><rect x='158' y='124' width='6' height='9'/><rect x='174' y='124' width='6' height='9'/><rect x='190' y='124' width='6' height='9'/><rect x='84' y='156' width='6' height='9'/><rect x='116' y='156' width='6' height='9'/><rect x='142' y='156' width='6' height='9'/><rect x='174' y='156' width='6' height='9'/><rect x='100' y='190' width='6' height='9'/><rect x='190' y='190' width='6' height='9'/></g><path d='M0 235q60-14 120-4t180-6v35H0z' fill='#0a0705'/><rect y='150' width='300' height='110' fill='url(#lf)'/></svg></div>
+  <div class='pn' style='grid-area:1/4/3/7'><svg viewBox='0 0 300 120' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='lc' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#3a0c0c'/><stop offset='1' stop-color='#120505'/></linearGradient></defs><rect width='300' height='120' fill='url(#lc)'/><g fill='#8a0f0f'><circle cx='40' cy='30' r='14'/><circle cx='260' cy='22' r='10'/><circle cx='150' cy='14' r='8'/></g><use href='#zs' x='4' y='34' width='40' height='66'/><use href='#zs' x='50' y='24' width='48' height='80'/><use href='#zs' x='104' y='40' width='36' height='60'/><use href='#zs' x='140' y='20' width='56' height='93'/><use href='#zs' x='204' y='38' width='38' height='63'/><use href='#zs' x='240' y='26' width='48' height='80'/></svg></div>
+  <div class='pn' style='grid-area:3/4/6/6'><svg viewBox='0 0 200 300' preserveAspectRatio='xMidYMid slice'><defs><radialGradient id='ld' cx='50%' cy='40%' r='60%'><stop offset='0' stop-color='#c9bba8'/><stop offset='1' stop-color='#6e6355'/></radialGradient><radialGradient id='le'><stop offset='0' stop-color='#fff'/><stop offset='.4' stop-color='#7fdcff'/><stop offset='1' stop-color='#7fdcff00'/></radialGradient></defs><rect width='200' height='300' fill='#2a1612'/><path d='M20 30Q5 150 30 290L72 290Q58 150 74 50zM180 30Q195 150 170 290L128 290Q142 150 126 50z' fill='#0b0807'/><path d='M60 250Q100 300 140 250L190 300H10z' fill='#0e0b09'/><ellipse cx='100' cy='125' rx='58' ry='82' fill='url(#ld)'/><path d='M58 60Q100 20 142 60Q100 40 58 60z' fill='#0b0807'/><circle cx='78' cy='100' r='20' fill='url(#le)'/><circle cx='122' cy='100' r='20' fill='url(#le)'/><circle cx='78' cy='100' r='4' fill='#06202a'/><circle cx='122' cy='100' r='4' fill='#06202a'/><path d='M96 112l4 20 4-20z' fill='#3a2a22'/><path d='M62 165Q100 215 138 165Q100 152 62 165z' fill='#3a0606'/><path d='M68 167h64' stroke='#e8e0c4' stroke-width='5' stroke-dasharray='6 2' fill='none'/><path d='M76 188Q100 200 124 188' stroke='#e8e0c4' stroke-width='4' stroke-dasharray='5 2' fill='none'/><path d='M80 195q4 40 0 60M118 192q3 30 8 50' stroke='#8a0f0f' stroke-width='6' fill='none'/><path d='M60 120l22 18-10 2z' fill='#7a1010'/><g fill='#8a0f0f'><circle cx='50' cy='200' r='5'/><circle cx='150' cy='230' r='7'/><circle cx='40' cy='250' r='4'/></g></svg></div>
+  <div class='pn' style='grid-area:3/6/6/7'><svg viewBox='0 0 100 300' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='lg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#8fa3b5'/><stop offset='.55' stop-color='#4a5a6a'/><stop offset='1' stop-color='#1a1410'/></linearGradient></defs><rect width='100' height='300' fill='url(#lg)'/><g style='filter:brightness(.05)'><use href='#zs' x='0' y='130' width='24' height='40'/><use href='#zs' x='18' y='124' width='26' height='43'/><use href='#zs' x='40' y='132' width='24' height='40'/><use href='#zs' x='58' y='126' width='26' height='43'/><use href='#zs' x='76' y='132' width='24' height='40'/></g><path d='M0 190h100v110H0z' fill='#1a110b'/><path d='M5 230L70 205M15 250L90 238M0 270L60 258' stroke='#4a3320' stroke-width='5'/><circle cx='30' cy='215' r='6' fill='#8a0f0f'/></svg></div>
+ </div>
+ <div class='scene'><div class='stage'>
+ <div class='sky'></div>
+ <svg class='ruins' viewBox='0 0 400 120' preserveAspectRatio='none'><path d='M0 0V120H140L120 80 90 70 70 30 40 45 20 10z' fill='#0a0605'/><path d='M400 20V120H250L270 85 300 80 320 50 350 60 380 30z' fill='#0a0605'/><path d='M0 120H400V104L330 108 260 100 170 106 90 100 0 108z' fill='#120a08'/></svg>
+ <div class='floorwrap'><div class='floor'></div></div>
+ <svg class='crew' viewBox='0 0 200 150'><defs><symbol id='sv' viewBox='0 0 24 46'><g fill='#0a0605' stroke='#ffb25a' stroke-width='.6' stroke-opacity='.8'><circle cx='10' cy='5' r='4'/><path d='M4 11h12l2 15-3 1-1 18h-4V32h-2v12H4L3 27z'/><path d='M16 13l7-5 1.5 2.500-7 6z'/></g></symbol></defs><g fill='#000' opacity='.55'><path d='M27 42h6l-30 108H-17z'/><path d='M55 42h6l-30 108H11z'/><path d='M83 42h6l-30 108H39z'/><path d='M111 42h6l-30 108H67z'/></g><use href='#sv' x='20' y='6' width='18' height='36'/><use href='#sv' x='48' y='4' width='19' height='38'/><use href='#sv' x='76' y='7' width='18' height='35'/><use href='#sv' x='104' y='5' width='18' height='37'/></svg>
+ <svg class='leg' viewBox='0 0 200 420'><defs><linearGradient id='sl' x1='0' x2='1'><stop offset='0' stop-color='#5a3426'/><stop offset='.25' stop-color='#2a1a1a'/><stop offset='1' stop-color='#0d0808'/></linearGradient></defs><path d='M50 0H160Q172 130 156 230Q182 262 176 306Q196 340 180 380L36 392Q14 350 46 310Q36 246 52 206Q40 100 50 0Z' fill='url(#sl)'/><path d='M50 0Q40 100 52 206Q36 246 46 310' stroke='#ff9a50' stroke-width='2.500' fill='none' opacity='.7'/><g stroke='#120c0a' stroke-width='7' fill='none' stroke-linecap='round'><path d='M52 250L170 300M46 300L174 255M50 150L160 190M54 195L158 150M52 100L158 130'/></g><g stroke='#6a4a3a' stroke-width='1.500' fill='none' opacity='.6'><path d='M52 248L170 298M48 298L172 253'/></g><g fill='#5a4036' stroke='#120c0a' stroke-width='2'><ellipse cx='52' cy='388' rx='20' ry='14'/><ellipse cx='84' cy='398' rx='18' ry='13'/><ellipse cx='118' cy='402' rx='17' ry='12'/><ellipse cx='150' cy='398' rx='15' ry='11'/><ellipse cx='174' cy='388' rx='12' ry='9'/></g><path d='M70 40q14 18 4 40-14-12-4-40zM110 120q16 14 10 36-14-8-10-36z' fill='#6a1010' opacity='.85'/><g fill='#8a1a14' opacity='.8'><circle cx='140' cy='210' r='4'/><circle cx='80' cy='330' r='5'/></g></svg>
+ <div class='flare'></div><div class='dust'></div>
+</div><div class='vg'></div></div>
+ <div class='lfoot'><div class='lrow'><span id='lstat'>Awaiting connection...</span><span id='lnet'></span></div><div id='lbar'><i id='lfill'></i></div><div id='ltip'>TIP: open DevTools now (F12). Firefox calls the Elements tab Inspector.</div><button id='lgo' class='hidden'>ENTER THE BUNKER</button></div>
+</div></section>
+
+<section id='brief' class='hidden'><div class='mbox'><div class='bhd'>MISSION BRIEFING</div><div id='bbody'><p class='story'>Day 11. The haze has rewritten the bunker's mainframe, and the dead are crawling through its code. You are Mara Voss, the last engineer on shift. Clean the code. Reach the helicopter.</p><ol class='bsteps'><li><b>Open DevTools</b><span>Press F12. Chrome calls the tab Elements, Firefox calls it Inspector.</span></li><li><b>Sterilize the infected sector</b><span>Find the red sector in the code and change its data-status to sterilized.</span></li><li><b>Follow the Objective panel</b><span>It guides you through the 5 stages to escape. A training step comes first, with no timer.</span></li></ol><div id='bmode'></div><div id='bbest' style='color:#d9a441;font-size:13px;margin-bottom:14px'></div><button id='bBegin'>BEGIN MISSION</button></div></div></section>
+<section id='lkbox' class='hidden'><div class='mbox'><div class='bhd'>MULTIPLAYER</div><div class='lkb' style='padding:16px 22px 20px;font-family:"Share Tech Mono",monospace;font-size:13px;line-height:1.6;color:#c9c4b8'><p style='margin:0 0 10px;color:#8a8478'>Both laptops need internet. Do this here, before the game starts.</p><div class='row'><button id='lkCreate'>LAPTOP 1: CREATE ROOM (you play RADAR)</button></div><div id='lkCode' style='font-size:34px;letter-spacing:10px;color:#e8e2d4;min-height:46px'></div><div class='row'><input id='lkJoinIn' maxlength='4' placeholder='CODE' style='width:90px;background:#000;color:#d8d2c4;border:1px solid #5a5248;padding:8px;font:inherit;text-transform:uppercase'><button id='lkJoin'>LAPTOP 2: JOIN ROOM (you play POWER)</button></div><div id='lkst'></div><details style='margin-top:10px'><summary style='cursor:pointer;color:#8a8478'>Room code not working? Manual link</summary><ol style='margin:8px 0 10px;padding-left:20px'><li><b>Laptop 1:</b> press CREATE HOST CODE, send the code to laptop 2.</li><li><b>Laptop 2:</b> paste it in the top box, press CREATE REPLY, send the reply back.</li><li><b>Laptop 1:</b> paste the reply in the top box and press CONNECT.</li></ol>PASTE HERE<textarea id='lkin'></textarea>YOUR CODE<textarea id='lkout' readonly></textarea><div class='row'><button id='lkHost'>CREATE HOST CODE</button><button id='lkGuest'>CREATE REPLY</button><button id='lkConn'>CONNECT</button><button id='lkcp'>COPY MY CODE</button></div></details><div class='row'><button id='lkx'>CLOSE</button></div></div></div></section>
+<section id='man' class='hidden'><div class='mbox'><div class='mtabs'><button data-t='0' class='on'>GOAL</button><button data-t='1'>RADAR</button><button data-t='2'>POWER</button><button data-t='3'>ESCAPE</button><button data-t='4'>HAZARDS</button><button id='mx'>CLOSE</button></div><div id='mbody'></div></div></section>
+
+<!-- HOW TO PLAY -->
+<section id="how" class="hidden">
+  <div class="box">
+    <h2>BRIEFING</h2><p class="story">You are Mara Voss, night-shift systems engineer, Quarantine Station 9. The purple haze has rewritten the bunker's mainframe, and every sector is now a node in the page's own markup. The dead are crawling through it. The terminal is locked, but the Elements panel is not. Rewrite what the haze has rewritten, and hold the line until the convoy arrives.</p><h2>FIELD MANUAL</h2>
+    <p>1. Press <kbd>F12</kbd> to open DevTools → <b>Elements</b>. The UI is corrupted; the markup is your weapon.<br>
+    2. <b>Open a second tab</b> of this page as the other station and put both tabs <b>side by side</b>.<br>
+    3. <b>Radar tab:</b> in Elements, change a sector's <kbd>data-status</kbd> from <kbd>infected</kbd> to <kbd>sterilized</kbd>, or delete its <kbd>&lt;zombie-node&gt;</kbd> children. After 30 s an untreated sector mutates and infects its neighbours. <span style="color:var(--red)">Never delete #main-power-grid.</span><br>
+    4. <b>Power tab:</b> click PUMP to keep the reactor above 30%, or the Radar tab blacks out. Drag the <b>Purifier Beacon</b> off the right edge of the window: a laser enters the Radar tab from the left and sterilizes the row it crosses.<br>
+    5. <b>Purple Purge:</b> press PURGE in both tabs within 3 seconds of each other to sterilize everything.<br>
+    Escape in 4 stages (see the Objective panel). Keep containment above 0%. Also: locked sectors need data-locked set to false first, trapped survivors give +12 containment if you clean their sector in time, and pumping the reactor builds heat (use VENT COOLANT). Chaos card: ENTROPY climbs over 90 seconds and glitches the screen harder; at 100% it collapses (3 outbreaks, history wiped). Drag the TEMPORAL SCRUBBER back through the last minute and COMMIT REWIND to restore that moment (+25% entropy, 30s cooldown).</p>
+    <button id="bGo">BEGIN</button>
+  </div>
+</section>
+
+<header><b>DOM OF THE HAZE</b><span id="roleTxt"></span><span>TABS: <span id="tabs">1</span></span><span id="clock">T+00:00</span><span>BEST: <span id="bestT">--:--</span></span><span id="status">NET: initializing</span><button id="mbtn">? MANUAL</button></header>
+
+<main>
+ <!-- RADAR & DEFENSE VIEW -->
+ <div class="rv">
+  <div id="bunker"></div>
+  <div class="side">
+   <div class="panel">CONTAINMENT <span id="integTxt">100</span>%<div class="bar"><i id="integ"></i></div>
+     <div style="margin-top:6px">INFECTED: <span id="infN">0</span> · MUTATED: <span id="aggN">0</span></div></div>
+   <div class="panel"><button id="rPurge">PURPLE PURGE</button><div id="pwin"><i></i></div><div id="banner"></div></div>
+   <div class="panel"><b>CHAOS CARD: TEMPORAL SCRUBBER</b><div style="margin-top:6px">ENTROPY <span id="entT">0</span>% · <span id="entC">90s to collapse</span></div><div class="bar"><i id="ent" style="width:0;background:#8b5fbf"></i></div><input id="tscr" type="range" min="0" max="0" value="0" style="width:100%;margin-top:8px"><div id="tprev" style="font-size:12px;margin-bottom:6px">Drag to preview a past moment.</div><button id="trew">COMMIT REWIND (+25% entropy)</button></div><div class="panel"><div id="obj" style="margin-bottom:8px"></div><input id="kin" maxlength="4" placeholder="CODE" style="width:90px;background:#000;color:#d8d2c4;border:1px solid #5a5248;padding:8px;font:inherit"> <button id="kgo">ENTER KEYPAD</button></div><div class="panel" id="log"></div>
+  </div>
+ </div>
+ <!-- POWER & AIR SCRUBBERS VIEW -->
+ <div class="pv">
+  <div style="text-align:center"><div id="reactor"><div id="pwTxt">100%</div></div><p>MANUAL REACTOR CORE</p><button id="pump">PUMP +5%</button></div>
+  <div class="side" style="max-width:420px">
+   <div class="panel">AIR SCRUBBERS<div id="scr"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+   <div class="panel">Drag the glowing <b>Purifier Beacon</b> off the right edge of this window to fire a laser into the Radar tab.</div>
+   <div class="panel"><button id="pPurge">PURPLE PURGE</button><div id="pwin2" class="" style="height:10px;margin-top:8px;background:#1a0e2b;display:none"><i style="display:block;height:100%;background:var(--p)"></i></div><div id="banner2"></div></div>
+   <div class="panel">REACTOR HEAT <span id="heatT">0</span>%<div class="bar"><i id="heat" style="width:0;background:#c9a227"></i></div><button id="cool" style="margin-top:8px">VENT COOLANT</button></div><div class="panel" id="pobj"><span id="pot">Awaiting orders from the radar tab.</span><div class="bar" style="margin-top:6px"><i id="pch" style="width:0"></i></div></div><div class="panel" id="log2" style="height:140px;overflow:auto;font-size:12px"></div>
+  </div>
+ </div>
+</main>
+
+<div id="beacon" class="pv" title="Purifier Beacon">✦</div><div id="edge" class="pv"></div>
+<div id="blackout"><div>⚠ POWER GRID FAILURE ⚠<br><br>UI BLACKOUT.<br>Switch to the POWER tab and pump the reactor above 30%.</div></div>
+<div id="lockdown"></div>
+<section id="end" class="hidden"><h1 class="glitch" id="endT" data-t="">—</h1><p id="endP"></p><div id="endS" style="font-family:'Special Elite',monospace;font-size:clamp(16px,2.4vw,24px);margin:6px 0 18px;color:#d9a441;max-width:90vw"></div><button onclick="location.reload()">RESTART</button></section>
+
+<script>
+/* =========================================================
+   DOM OF THE HAZE — one codebase, three layers:
+   [1] AUDIO   procedural Web Audio (no files)
+   [2] NET     BroadcastChannel cross-tab messaging
+   [3] GAME    rendering reads the live DOM attributes
+   ========================================================= */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const ID=Math.random().toString(36).slice(2,8);
+const now=()=>performance.timeOrigin+performance.now();   // clock shared across tabs
+let role=null,over=false,started=false;
+
+/* ---------- [1] AUDIO ---------- */
+let A=null,M=null;
+function initAudio(){
+  if(A)return;
+  try{A=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  M=A.createGain();M.gain.value=.8;M.connect(A.destination);
+  // Low emergency alarm hum, throbbing with an LFO
+  const o=A.createOscillator(),g=A.createGain(),f=A.createBiquadFilter(),l=A.createOscillator(),lg=A.createGain();
+  o.type='sawtooth';o.frequency.value=55;f.type='lowpass';f.frequency.value=220;g.gain.value=.07;
+  l.frequency.value=.6;lg.gain.value=.05;l.connect(lg);lg.connect(g.gain);
+  o.connect(f);f.connect(g);g.connect(M);o.start();l.start();
+  // Detuned sub drone = dread
+  [40,42.5].forEach(fr=>{const d=A.createOscillator(),dg=A.createGain();d.frequency.value=fr;dg.gain.value=.08;d.connect(dg);dg.connect(M);d.start()});
+  // Howling wind: filtered noise with a slowly moving band
+  const b=A.createBuffer(1,A.sampleRate*2,A.sampleRate),c=b.getChannelData(0);
+  for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;
+  const n=A.createBufferSource();n.buffer=b;n.loop=true;
+  const bf=A.createBiquadFilter();bf.type='bandpass';bf.frequency.value=350;bf.Q.value=.8;
+  const ng=A.createGain();ng.gain.value=.05;
+  const wl=A.createOscillator(),wg=A.createGain();wl.frequency.value=.15;wg.gain.value=200;wl.connect(wg);wg.connect(bf.frequency);wl.start();
+  n.connect(bf);bf.connect(ng);ng.connect(M);n.start();
+  // Distant zombie groans at random intervals
+  (function loop(){setTimeout(()=>{moan();loop()},5000+Math.random()*9000)})();
+}
+function moan(big){
+  if(!A)return;const t=A.currentTime,o=A.createOscillator(),g=A.createGain(),f=A.createBiquadFilter(),v=A.createOscillator(),vg=A.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(big?110:85,t);o.frequency.exponentialRampToValueAtTime(big?45:55,t+2);
+  v.frequency.value=6;vg.gain.value=big?8:4;v.connect(vg);vg.connect(o.frequency);
+  f.type='lowpass';f.frequency.value=500;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(big?.3:.12,t+.5);g.gain.linearRampToValueAtTime(0,t+2.2);
+  o.connect(f);f.connect(g);g.connect(M);v.start(t);o.start(t);o.stop(t+2.3);v.stop(t+2.3);
+}
+function click(){ // short static/glitch burst
+  if(!A)return;const b=A.createBuffer(1,A.sampleRate*.06,A.sampleRate),c=b.getChannelData(0);
+  for(let i=0;i<c.length;i++)c[i]=(Math.random()*2-1)*(1-i/c.length);
+  const s=A.createBufferSource(),g=A.createGain(),f=A.createBiquadFilter();
+  s.buffer=b;f.type='highpass';f.frequency.value=1500;g.gain.value=.25;s.connect(f);f.connect(g);g.connect(M);s.start();
+}
+function tone(fr,d,type){
+  if(!A)return;const t=A.currentTime,o=A.createOscillator(),g=A.createGain();
+  o.type=type||'sine';o.frequency.value=fr;g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.connect(g);g.connect(M);o.start(t);o.stop(t+d);
+}
+const chime=()=>{tone(660,.25);setTimeout(()=>tone(990,.3),90)};
+function siren(ms){ // heavy lockdown siren
+  if(!A)return;const t=A.currentTime,s=ms/1000,o=A.createOscillator(),g=A.createGain(),l=A.createOscillator(),lg=A.createGain(),f=A.createBiquadFilter();
+  o.type='square';o.frequency.value=700;l.frequency.value=.9;lg.gain.value=250;l.connect(lg);lg.connect(o.frequency);
+  f.type='lowpass';f.frequency.value=1400;g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(.16,t+.3);g.gain.setValueAtTime(.16,t+s-.4);g.gain.linearRampToValueAtTime(0,t+s);
+  o.connect(f);f.connect(g);g.connect(M);o.start(t);l.start(t);o.stop(t+s);l.stop(t+s);
+}
+document.addEventListener('pointerdown',e=>{if(e.target.closest('button'))click()});
+
+/* ---------- [2] NET: cross-tab messaging ---------- */
+let ch=null,peers={};
+try{ch=new BroadcastChannel('purple_haze_net')}catch(e){}
+function send(type,d){if(solo&&['emergency','restore','beacon','charged'].includes(type))try{onMsg(Object.assign({type,from:ID,role,t:now()},d||{}))}catch(e){}const m=Object.assign({type,from:ID,role,t:now()},d||{});let ok=false;if(ch)try{ch.postMessage(m);ok=true}catch(e){}if(dc&&dc.readyState==='open')try{dc.send(JSON.stringify(m));ok=true}catch(e){}return ok}
+const peerCount=r=>Object.values(peers).filter(p=>!r||p.role===r).length;
+const logEl=()=>role==='radar'?$('#log'):$('#log2');
+function log(msg,cls){const e=logEl(),d=document.createElement('div');d.className=cls||'';d.textContent='> '+msg;e.prepend(d);while(e.children.length>40)e.lastChild.remove()}
+function netUpdate(){
+  $('#tabs').textContent=1+peerCount();
+  $('#status').textContent=(!ch&&!linked)?'NET OFFLINE: BroadcastChannel unsupported (single-tab mode)':
+    peerCount()?'NET LINKED: '+Object.values(peers).map(p=>p.role).join(', ').toUpperCase():
+    solo?'SOLO MODE: one tab is enough':'NET: no other tab detected — open a second tab';
+}
+const handleNet=m=>{
+  if(!m||m.from===ID)return;
+  if(m.type==='bye'){delete peers[m.from];netUpdate();return}
+  if(!peers[m.from]){log('Tab joined: '+(m.role||'?').toUpperCase(),'g')}
+  peers[m.from]={role:m.role,seen:performance.now()};netUpdate();
+  if(m.type==='hello')send('beat');
+  try{onMsg(m)}catch(err){console.error(err)}
+};
+if(ch)ch.onmessage=e=>handleNet(e.data);
+addEventListener('beforeunload',()=>send('bye'));
+/* ===== two-laptop link (start screen only): 4-letter room code via PeerJS, manual paste code as backup ===== */
+let pc=null,dc=null,linked=false,manualHost=false,readyMe=0,readyPeer=0,peerObj=null;
+const netIn=m=>handleNet(m);
+const lk=t=>{$('#lkst').textContent=t};
+const PFX='dom-haze-',CHARS='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}]};
+function gotLink(r){
+  if(linked)return;linked=true;
+  lk('LINKED! Entering as '+(r==='radar'?'RADAR & DEFENSE':'POWER & SCRUBBERS')+'...');
+  send('hello');netUpdate();chime();
+  setTimeout(()=>{$('#lkbox').classList.add('hidden');if(!role)pickRole(r)},900);
+}
+function linkUp(conn,r){
+  dc={get readyState(){return conn.open?'open':'closed'},send:s=>conn.send(s)};
+  conn.on('data',d=>{try{netIn(typeof d==='string'?JSON.parse(d):d)}catch(e){}});
+  conn.on('close',()=>{lk('Link closed');if(role)log('Laptop link closed','r')});
+  gotLink(r);
+}
+$('#bLink').onclick=()=>$('#lkbox').classList.remove('hidden');
+$('#lkx').onclick=()=>$('#lkbox').classList.add('hidden');
+$('#lkCreate').onclick=()=>{
+  if(linked)return;
+  if(!window.Peer){lk('Room service did not load. Check internet, or use the manual link below.');return}
+  const mk=()=>{
+    const code=Array.from({length:4},()=>CHARS[Math.random()*CHARS.length|0]).join('');
+    if(peerObj)try{peerObj.destroy()}catch(e){}
+    const p=peerObj=new Peer(PFX+code,{config:ICE});
+    p.on('open',()=>{$('#lkCode').textContent=code;lk('Tell laptop 2 this code. Waiting for it to join...')});
+    p.on('connection',c=>{if(linked){c.close();return}lk('Laptop 2 found, connecting...');c.on('open',()=>linkUp(c,'radar'))});
+    p.on('error',e=>{if(e.type==='unavailable-id')mk();else lk('Error: '+e.type+'. Try again or use the manual link.')});
+  };
+  lk('Creating room...');mk();
+};
+$('#lkJoin').onclick=()=>{
+  if(linked)return;
+  const code=$('#lkJoinIn').value.trim().toUpperCase();
+  if(code.length!==4){lk('Type the 4-letter code shown on laptop 1.');return}
+  if(!window.Peer){lk('Room service did not load. Check internet, or use the manual link below.');return}
+  if(peerObj)try{peerObj.destroy()}catch(e){}
+  let step=1;lk('Step 1/3: contacting room server...');
+  const p=peerObj=new Peer({config:ICE});
+  const t1=setTimeout(()=>{if(step===1&&!linked)lk('Cannot reach the room server. This Wi-Fi may block it. Try a phone hotspot, or use the manual link below.')},8000);
+  p.on('open',()=>{
+    step=2;clearTimeout(t1);lk('Step 2/3: server OK, looking for room '+code+'...');
+    const c=p.connect(PFX+code,{reliable:true});
+    let n=0;const iv=setInterval(()=>{
+      if(linked||c.open){clearInterval(iv);return}
+      n++;const pcn=c.peerConnection;
+      if(pcn){step=3;const st=pcn.iceConnectionState;
+        if(st==='failed'){clearInterval(iv);lk('Step 3/3 failed: the two laptops cannot reach each other on these networks. Put both on the same phone hotspot, or use the manual link.');return}
+        lk('Step 3/3: connecting to host... ('+st+')')}
+      if(n>30){clearInterval(iv);lk('Timed out. Check the code, that laptop 1 still shows its code, and try a phone hotspot on both laptops.')}
+    },1000);
+    c.on('open',()=>{clearInterval(iv);linkUp(c,'power')});
+    c.on('error',e=>lk('Connection error: '+e.type));
+  });
+  p.on('error',e=>lk(e.type==='peer-unavailable'?'Room not found. Check the code, and that laptop 1 pressed CREATE ROOM (its code must still be showing).':'Error: '+e.type));
+  p.on('disconnected',()=>{if(!linked&&step===1)lk('Lost the room server. Try again.')});
+};
+/* manual backup (copy/paste codes, no room server) */
+const enc=d=>btoa(JSON.stringify(d)),dec=s=>JSON.parse(atob(s.trim()));
+function mkpc(){pc=new RTCPeerConnection(ICE);
+  pc.onconnectionstatechange=()=>{lk('Link: '+pc.connectionState);if(pc.connectionState==='connected')gotLink(manualHost?'radar':'power')}}
+function wire(c){dc=c;c.onopen=()=>{send('hello')};c.onmessage=e=>{try{netIn(JSON.parse(e.data))}catch(err){}};c.onclose=()=>lk('Link closed')}
+const waitIce=()=>new Promise(r=>{if(pc.iceGatheringState==='complete')return r();const t=setTimeout(r,4000);pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);r()}}});
+$('#lkcp').onclick=()=>{$('#lkout').select();document.execCommand('copy');lk('Code copied.')};
+$('#lkHost').onclick=async()=>{try{manualHost=true;mkpc();wire(pc.createDataChannel('haze'));await pc.setLocalDescription(await pc.createOffer());await waitIce();$('#lkout').value=enc(pc.localDescription);lk('Send YOUR CODE to the other laptop. Paste their reply in the top box, then press CONNECT.')}catch(e){lk('Error: '+e.message)}};
+$('#lkConn').onclick=async()=>{try{if(!pc){lk('Press CREATE HOST CODE first.');return}await pc.setRemoteDescription(dec($('#lkin').value));lk('Connecting...')}catch(e){lk('Bad code: '+e.message)}};
+$('#lkGuest').onclick=async()=>{try{manualHost=false;const v=$('#lkin').value;if(!v.trim()){lk('Paste the host code in the top box first.');return}mkpc();pc.ondatachannel=e=>wire(e.channel);await pc.setRemoteDescription(dec(v));await pc.setLocalDescription(await pc.createAnswer());await waitIce();$('#lkout').value=enc(pc.localDescription);lk('Send YOUR CODE back to the host laptop.')}catch(e){lk('Error: '+e.message)}};
+setInterval(()=>{ // heartbeat + detect tabs closed mid-game
+  if(!role)return;send('beat');const n=performance.now();
+  for(const k in peers)if(n-peers[k].seen>6000){log('Tab LOST: '+peers[k].role,'r');delete peers[k];
+    if(role==='radar')setBlackout(false)}
+  netUpdate();
+},2000);
+
+function onMsg(m){
+  switch(m.type){
+    case 'emergency': if(role==='radar'&&started)lastEm=Date.now(),setBlackout(true);break;   // reactor <30%
+    case 'restore': if(role==='radar')setBlackout(false);break;
+    case 'beacon': if(role==='radar'&&started)laser(m.y);break;                                // cross-tab laser
+    case 'state': if(role==='power'){setEnt(m.ent||0);if(m.stage!==pstage){pstage=m.stage;powerStage(m.stage)}thr=m.agg||0;$('#status').title='Radar containment '+Math.round(m.integ)+'%'}break;
+    case 'charged': if(role==='radar'&&stage===2)nextStage();break;
+    case 'ready': readyPeer=1;tryGo();break;
+    case 'purge': purgeIn(m.who,now());break;
+    case 'purge_result': result(m.ok);break;
+    case 'end': if(!over)endScreen(m.win,m.time);break;
+  }
+}
+
+/* ---------- PURPLE PURGE: strict 3-second sync window ---------- */
+let pg={t:{},win:0,done:0};
+function purgePress(w){w=w||role;
+  if(started===false||over||pg.t[w])return;
+  send('purge',{who:w});purgeIn(w,now());
+  if(!peerCount()&&!solo){log('No other tab to sync with!','r')}
+}
+function purgeIn(who,t){
+  pg.t[who]=t;
+  if(!pg.win){pg.win=1;
+    ['#pwin','#pwin2'].forEach(s=>{const e=$(s);if(!e)return;e.style.display='block';const i=e.firstElementChild;i.style.animation='none';i.offsetWidth;i.style.animation='shrink 3s linear forwards'});
+    setTimeout(()=>judge(false),3300);
+  }
+  judge(true);
+}
+function judge(early){ // only the radar tab judges, against shared timestamps
+  if(role!=='radar'&&peerCount('radar'))return;
+  if(pg.done)return;
+  const a=pg.t.radar,b=pg.t.power;
+  if(a&&b){pg.done=1;const ok=Math.abs(a-b)<=3000;send('purge_result',{ok});result(ok)}
+  else if(!early){pg.done=1;send('purge_result',{ok:false});result(false)}
+}
+function result(ok){if(ok&&role==='radar'&&stage===3)setTimeout(nextStage,800);
+  const msg=ok?'PURPLE PURGE SUCCESS — HAZE NEUTRALIZED':'PURGE DESYNC — outside the 3s window';
+  ['#banner','#banner2'].forEach(s=>{const e=$(s);if(e){e.textContent=msg;e.style.color=ok?'var(--grn)':'var(--red)'}});
+  if(ok){chime();if(role==='radar')$$('.bunker-sector').forEach(s=>{if(s.dataset.status!=='clean')s.dataset.status='sterilized'})}
+  else{moan(true);if(role==='radar')for(let i=0;i<2;i++)spawn()}
+  setTimeout(()=>{pg={t:{},win:0,done:0};['#pwin','#pwin2'].forEach(s=>{const e=$(s);if(e)e.style.display='none'})},4000);
+}
+
+/* ---------- [3] GAME: RADAR & DEFENSE ---------- */
+const N=9;let integ=100,t0=0,lock=0,restoring=false,blackout=false,lastEm=0,spawnAt=0,lastState=0;
+const WIN_AT=99999;
+function buildRadar(){
+  const b=$('#bunker');
+  b.innerHTML='<div id="main-power-grid" data-integrity="100">MAIN POWER GRID — DO NOT REMOVE</div>';
+  for(let i=1;i<=N;i++){const s=document.createElement('div');s.className='bunker-sector';s.id='sector-'+i;s.dataset.status='clean';s.dataset.decay='30';b.appendChild(s)}
+  // Mechanic 1: MutationObserver — core removal => restore + lockdown
+  new MutationObserver(ms=>{
+    for(const m of ms){
+      if(m.type==='childList'){
+        m.removedNodes.forEach(x=>{
+          if(x.id==='main-power-grid'&&!restoring){restoring=true;b.prepend(x);restoring=false;lockdown();log('CORE BREACH: #main-power-grid removed — restored, LOCKOUT!','r')}
+        });
+      }else if(m.type==='attributes'&&m.target.dataset.status==='sterilized'&&m.oldValue!=='sterilized'){
+        log(m.target.id+' sterilized','g');chime();
+        if(!trained){trained=true;t0=performance.now();spawnAt=performance.now()+6000;sub('Well done. The real outbreak begins now. Follow the Objective panel.');showObj()}
+        if(m.target.dataset.survivor&&m.target.dataset.locked!=='true'){const nm=m.target.dataset.survivor;delete m.target.dataset.survivor;integ=Math.min(100,integ+12);sub(nm+' is safe. Thank you, Mara.');log(nm+' rescued! +12 containment','g')}
+      }
+    }
+  }).observe(b,{childList:true,subtree:true,attributes:true,attributeFilter:['data-status'],attributeOldValue:true});
+}
+const adj=s=>{const i=+s.id.split('-')[1]-1,r=i/3|0,c=i%3,o=[];
+  [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{const R=r+dr,C=c+dc;if(R>=0&&R<3&&C>=0&&C<3)o.push($('#sector-'+(R*3+C+1)))});return o};
+function addZ(s,n){for(let i=0;i<n;i++){const z=document.createElement('zombie-node');z.innerHTML='<svg width="44" height="73"><use href="#zs"/></svg>';s.appendChild(z)}}
+function infect(s){ // Mechanic 3: each node stamps a countdown timestamp from performance.now()
+  if(!s||s.dataset.status!=='clean')return;
+  s.dataset.status='infected';s.dataset.since=performance.now();s.dataset.decay='50';addZ(s,1);
+  const r=Math.random();
+  if(r<.2&&performance.now()-t0>40000){s.dataset.locked='true';log(s.id+' is LOCKED: set data-locked to false before you can clean it','r')}
+  else if(r<.35&&!$('.bunker-sector[data-survivor]')){const nm=['Eli','Rosa','Marcus','Tess'][Math.random()*4|0];s.dataset.survivor=nm;log('SURVIVOR '+nm+' is trapped in '+s.id+'. Sterilize it before it mutates!','g');sub(nm+' is screaming for help in '+s.id+'!')}
+}
+function spawn(){const c=$$('.bunker-sector').filter(s=>s.dataset.status==='clean');if(c.length){infect(c[Math.random()*c.length|0]);log('Outbreak detected!','r');moan()}}
+function lockdown(){lock=performance.now()+8000;$('#lockdown').classList.add('on');siren(8000);integ-=12}
+function setBlackout(on){if(on===blackout)return;blackout=on;$('#blackout').classList.toggle('on',on);if(on)siren(2500);else log('Power restored','g')}
+function laser(y){
+  const L=document.createElement('div');L.className='laser';L.style.top=(y*100)+'%';document.body.appendChild(L);
+  tone(180,.9,'sawtooth');setTimeout(()=>L.remove(),2400);
+  const py=y*innerHeight;
+  $$('.bunker-sector').forEach(s=>{const r=s.getBoundingClientRect();
+    if(py>=r.top&&py<=r.bottom)setTimeout(()=>{if(s.dataset.status!=='clean')s.dataset.status='sterilized'},(r.left+r.width/2)/innerWidth*2200)});
+  log('Purifier laser entered from the left edge','g');
+}
+const BEATS=[[4,'Mara, if you can hear this: the Elements panel still works. Inspect a sector.'],[22,'Change data-status. A clean attribute is the one thing they cannot survive.'],[50,'The reactor room is cut off. Open a second tab and keep the power up.'],[80,'Do not touch the main power grid. If it goes, the doors lock with us inside.'],[110,'Radio: Convoy is on the bridge. Hold on.'],[140,'I can hear rotors.']];let bi=0,subT;
+/* ===== CHAOS CARD: temporal state scrubber + 90s visual glitch entropy ===== */
+const HIST=[];let lastSnap=0,rewCd=0,ent=0,lastE=0,gT;
+function snap(n){ // record the whole sector state every 2s (last 60s kept)
+  HIST.push({t:n,integ,s:$$('.bunker-sector').map(s=>({st:s.dataset.status,age:s.dataset.since?n-(+s.dataset.since):0,z:s.querySelectorAll('zombie-node').length,lk:s.dataset.locked,sv:s.dataset.survivor}))});
+  if(HIST.length>30)HIST.shift();const r=$('#tscr');r.max=HIST.length-1;if(!r.dataset.drag)r.value=HIST.length-1;
+}
+function setEnt(v){const b=document.body;b.style.setProperty('--g',v/100);b.classList.toggle('g1',v>40&&v<=75);b.classList.toggle('g2',v>75)}
+function corrupt(el){const t=el.textContent;el.textContent=t.replace(/[a-z]/gi,c=>Math.random()<.25?'#%&@?'[Math.random()*5|0]:c);setTimeout(showObj,180)}
+function chaos(n){ // entropy rises 0 to 100 over 90s; visuals scale with it
+  const dt=(n-(lastE||n))/1000;lastE=n;ent=Math.min(100,ent+dt/90*100);
+  if(n-lastSnap>2000){lastSnap=n;snap(n)}
+  if(ent>=100)collapse();
+  setEnt(ent);$('#ent').style.width=ent+'%';$('#entT').textContent=Math.round(ent);$('#entC').textContent=Math.max(0,Math.ceil((100-ent)*.9))+'s to collapse';
+  if(ent>70&&Math.random()<.15)corrupt($('#obj'));
+}
+function glitchBurst(ms){document.body.classList.add('col');setTimeout(()=>document.body.classList.remove('col'),ms)}
+function collapse(){ent=0;HIST.length=0;sub('ENTROPY COLLAPSE. The timeline is corrupted.');log('ENTROPY COLLAPSE: history wiped, outbreaks surge','r');siren(2500);moan(true);for(let i=0;i<3;i++)spawn();glitchBurst(2500)}
+function prev(){
+  const h=HIST[+$('#tscr').value];if(!h)return;const a=h.s.filter(x=>x.st==='infected').length,b=h.s.filter(x=>x.st==='aggressive').length;
+  $('#tscr').dataset.drag=1;$('#tprev').textContent='T-'+Math.round((performance.now()-h.t)/1000)+'s · '+a+' infected · '+b+' mutated · containment '+Math.round(h.integ)+'%';
+  $$('.bunker-sector').forEach((s,i)=>s.dataset.ghost=h.s[i].st);
+  clearTimeout(gT);gT=setTimeout(()=>{$$('.bunker-sector').forEach(s=>delete s.dataset.ghost);$('#tscr').dataset.drag='';$('#tscr').value=HIST.length-1;$('#tprev').textContent='Drag to preview a past moment.'},6000);
+}
+function rewind(){
+  const n=performance.now();if(over||n<rewCd)return;const h=HIST[+$('#tscr').value];if(!h)return;
+  rewCd=n+30000;$('#trew').disabled=true;setTimeout(()=>$('#trew').disabled=false,30000);
+  $$('.bunker-sector').forEach((s,i)=>{const o=h.s[i];s.querySelectorAll('zombie-node').forEach(x=>x.remove());['clean','spread','warned','ghost'].forEach(k=>delete s.dataset[k]);
+    s.dataset.status=o.st;o.lk?s.dataset.locked=o.lk:delete s.dataset.locked;o.sv?s.dataset.survivor=o.sv:delete s.dataset.survivor;
+    if(o.st==='infected'||o.st==='aggressive'){s.dataset.since=n-o.age;s.dataset.spread=n;addZ(s,o.z||1)}});
+  integ=h.integ;sub('Time folds back '+Math.round((n-h.t)/1000)+' seconds...');log('TEMPORAL REWIND committed (+25% entropy)','g');tone(120,1,'sawtooth');glitchBurst(700);
+  HIST.length=0;ent+=25;if(ent>=100)collapse();
+}
+$('#tscr').oninput=prev;$('#trew').onclick=rewind;
+/* loading screen: status text and progress bar, with live network info */
+function runLoading(){
+  const msgs=['Awaiting connection...','Syncing BroadcastChannel...','Corrupting DOM nodes...','Mapping sectors...','Calibrating reactor core...','Counting the dead...'];
+  const dst=document.querySelector('.dust');if(dst&&!dst.children.length)for(let i=0;i<40;i++){const e=document.createElement('i');e.style.cssText='left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;animation-delay:-'+Math.random()*8+'s;animation-duration:'+(6+Math.random()*8)+'s;opacity:'+(.2+Math.random()*.5);dst.appendChild(e)}
+  let p=0;const f=$('#lfill'),s=$('#lstat'),n=$('#lnet'),g=$('#lgo');
+  const iv=setInterval(()=>{
+    p=Math.min(100,p+Math.random()*7+1.5);f.style.width=p+'%';
+    s.textContent=msgs[Math.min(msgs.length-1,Math.floor(p/100*msgs.length))];
+    n.textContent=(ch?'NET: ONLINE':'NET: OFFLINE')+' · TABS: '+(1+peerCount());
+    if(p>=100){clearInterval(iv);s.textContent='Connection established.';tone(440,.2);setTimeout(()=>{$('#loading').classList.add('hidden');openBrief()},1000)}
+  },300);
+}
+/* clean in-game manual, opened with the MANUAL button */
+const MAN=[
+"<h3>THE GOAL</h3><p>Escape Quarantine Station 9 before the haze takes the bunker.</p><ul><li>Clear <b>5 stages</b> to reach the helicopter.</li><li>Keep <b>containment</b> above 0%.</li><li>You need two stations: <b>Radar</b> and <b>Power</b>, in two tabs or on two laptops (use MULTIPLAYER on the start screen).</li></ul><p class='dim'>Press F12 for DevTools. Chrome calls the tab Elements, Firefox calls it Inspector.</p>",
+"<h3>RADAR TAB</h3><ul><li>Use the pick tool (arrow at the top-left of DevTools), then click a sector.</li><li>Change <code>data-status</code> to <code>sterilized</code>, or delete its <code>&lt;zombie-node&gt;</code>.</li><li>An untreated sector mutates after <b>50 s</b> and spreads.</li><li class='warn'>Never delete <code>#main-power-grid</code>.</li></ul>",
+"<h3>POWER TAB</h3><ul><li><b>PUMP</b> keeps the reactor above 30%. Below that, the Radar tab blacks out.</li><li><b>VENT COOLANT</b> when heat nears 100%.</li><li>Drag the orange <b>flare</b> off the right edge of the window to fire a beam into the Radar tab.</li></ul>",
+"<h3>THE 5 STAGES</h3><ol><li><b>Armory:</b> find <code>#keycard</code>, read its <code>data-code</code>, type it on the keypad.</li><li><b>Gate:</b> in the Console run <code>bunker.help()</code>. Read the token in <code>&lt;meta name=\"gate-token\"&gt;</code>, then run <code>bunker.override(\"TOKEN\")</code>.</li><li><b>Power:</b> in the Power tab, hold the reactor at 80% or more for 8 s.</li><li><b>Exit:</b> press <b>PURPLE PURGE</b> on both the Radar and Power sides within 3 s.</li><li><b>Final stand:</b> hold the gate for 90 s with containment above 40%.</li></ol>",
+"<h3>HAZARDS</h3><ul><li><b>Locked sector</b> (dashed outline): set <code>data-locked</code> to <code>false</code> first.</li><li><b>Survivor</b> (blue ring): clean the sector in time for +12 containment.</li><li><b>Chaos card:</b> entropy fills in 90 s, then collapses. Drag the scrubber back and press <b>COMMIT REWIND</b> to undo mistakes.</li></ul>"];
+function man(i){$$('.mtabs button[data-t]').forEach(b=>b.classList.toggle('on',+b.dataset.t===i));$('#mbody').innerHTML=MAN[i]}
+$('#mbtn').onclick=()=>{$('#man').classList.remove('hidden');man(0)};$('#mx').onclick=()=>$('#man').classList.add('hidden');
+$$('.mtabs button[data-t]').forEach(b=>b.onclick=()=>man(+b.dataset.t));
+addEventListener('keydown',e=>{if(e.key==='Escape')$('#man').classList.add('hidden')});
+/* solo mode (one tab runs both stations) and first-time training */
+let solo=false,trained=false,fs=0;
+function openBrief(){showBest();$('#bmode').textContent=linked?'TWO-LAPTOP MODE: linked. The mission starts when both laptops press BEGIN MISSION.':solo?'SOLO MODE: everything is on this page. Scroll down for the reactor controls.':role==='radar'?'CO-OP MODE: open this link in a second tab and choose Power & Scrubbers, or use MULTIPLAYER on the start screen to play on two laptops.':'POWER STATION: keep the reactor alive for the Radar tab.';$('#brief').classList.remove('hidden')}
+
+function go(){start();setTimeout(()=>sub('Stuck? Open the MANUAL at the top.'),1500)}
+function tryGo(){if(readyMe&&readyPeer&&!started)go()}
+$('#bBegin').onclick=()=>{if(linked){readyMe=1;send('ready');$('#bBegin').disabled=true;$('#bBegin').textContent='WAITING FOR PARTNER...';tryGo()}else go()};
+/* ===== ESCAPE PROTOCOL: 4 stages, each solved with a different DevTools skill ===== */
+let stage=0,code='',token='';
+const OBJ=['STAGE 1 · ARMORY: a keycard code is hidden in the DOM. Find the #keycard element in Elements, read its data-code, and enter it on the keypad.','STAGE 2 · GATE OVERRIDE: open the Console and run bunker.help(). Follow what it tells you.','STAGE 3 · POWER THE GATE: in the POWER tab, hold the reactor at 80% or more for 8 seconds.','STAGE 4 · CLEAR THE HALL: press PURPLE PURGE on both the Radar and Power sides within 3s to open the exit.','STAGE 5 · FINAL STAND: hold the gate for 90s.'];
+function showObj(){$('#obj').textContent=trained?OBJ[stage]:'TRAINING (no timer): press F12, pick the red sector, set its data-status to sterilized.'}
+function initEscape(){
+  code=String(1000+Math.random()*9000|0);token='HZ-'+Math.random().toString(36).slice(2,7).toUpperCase();
+  const k=document.createElement('div');k.id='keycard';k.hidden=true;k.dataset.code=code;k.dataset.note='armory keycard';$('#bunker').appendChild(k);
+  window.bunker={help(){return 'Gate override needs the token stored in the <meta name="gate-token"> tag in <head>. Run bunker.override("TOKEN"). bunker.status() shows progress.'},status(){return {stage:stage+1,containment:Math.round(integ)}},override(t){if(stage!==1)return 'Gate not ready.';if(String(t)===token){nextStage();return 'OVERRIDE ACCEPTED'}integ-=3;return 'ACCESS DENIED'}};
+  console.log('%cBUNKER-OS','color:#b3201f;font:bold 22px monospace','online. Type bunker.help()');
+  $('#kgo').onclick=()=>{if(stage!==0){log('Keypad is offline.','r');return}if($('#kin').value.trim()===code){log('KEYCARD ACCEPTED','g');nextStage()}else{log('KEYCARD REJECTED','r');integ-=3;tone(90,.5,'square')}};
+  showObj();
+  setInterval(()=>{if(started&&!over&&stage<5){for(let i=0;i<2;i++)spawn();sub('Horde at the door!');siren(1500)}},75000);
+}
+function nextStage(){
+  stage++;chime();setTimeout(()=>tone(220,.5,'sawtooth'),200);
+  if(stage>=5){const tt=(performance.now()-t0)/1000;endScreen(true,tt);send('end',{win:true,time:tt});return}
+  sub(['Armory open. The console is still alive. Type bunker.help().','Gate motors need power. Get the reactor above eighty and hold it.','Gate unlocked. One last hall full of them. One clean purge and the exit is ours.','The exit is open, but the helicopter needs 90 seconds. Hold the gate!'][stage-1]);showObj();
+  if(stage===1){const m=document.createElement('meta');m.name='gate-token';m.content=token;document.head.appendChild(m)}
+}
+function powerStage(n){chargeMode=n===2;charge=0;$('#pot').textContent=n===2?'STAGE 3: hold the reactor at 80% or more for 8 seconds.':n===3?'STAGE 4: press PURGE here and in the radar tab within 3 seconds.':'Stage '+(n+1)+': the radar tab is working on it.'}
+/* ---- realistic zombie audio (procedural; later declarations override the earlier simple moan) ---- */
+function noiseBuf(d){const b=A.createBuffer(1,A.sampleRate*d,A.sampleRate),c=b.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;return b}
+function moan(big){ // throaty groan: sawtooth + vocal fry + mouth formants + raspy breath
+  if(!A)return;const t=A.currentTime,dur=big?2.6:1.8+Math.random()*1.2,f0=big?70:85+Math.random()*30;
+  const o=A.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f0*1.25,t);o.frequency.linearRampToValueAtTime(f0,t+dur*.4);o.frequency.exponentialRampToValueAtTime(f0*.6,t+dur);
+  const fl=A.createOscillator(),fg=A.createGain();fl.type='square';fl.frequency.value=17+Math.random()*8;fg.gain.value=f0*.18;fl.connect(fg);fg.connect(o.frequency);
+  const f1=A.createBiquadFilter(),f2=A.createBiquadFilter();f1.type=f2.type='bandpass';f1.Q.value=f2.Q.value=6;
+  f1.frequency.setValueAtTime(350,t);f1.frequency.linearRampToValueAtTime(750,t+dur*.5);f1.frequency.linearRampToValueAtTime(400,t+dur);
+  f2.frequency.setValueAtTime(800,t);f2.frequency.linearRampToValueAtTime(1150,t+dur*.5);f2.frequency.linearRampToValueAtTime(700,t+dur);
+  const mix=A.createGain();mix.gain.value=4;o.connect(f1);o.connect(f2);f1.connect(mix);f2.connect(mix);
+  const n=A.createBufferSource();n.buffer=noiseBuf(2);n.loop=true;const nf=A.createBiquadFilter();nf.type='bandpass';nf.frequency.value=1400;nf.Q.value=1.2;
+  const ng=A.createGain();ng.gain.value=.5;const am=A.createOscillator(),ag=A.createGain();am.frequency.value=26;ag.gain.value=.5;am.connect(ag);ag.connect(ng.gain);
+  n.connect(nf);nf.connect(ng);ng.connect(mix);
+  const g=A.createGain(),pk=big?.5:.2,lp=A.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(pk,t+dur*.3);g.gain.linearRampToValueAtTime(pk*.7,t+dur*.65);g.gain.linearRampToValueAtTime(0,t+dur);
+  mix.connect(lp);lp.connect(g);g.connect(M);[o,fl,n,am].forEach(x=>{x.start(t);x.stop(t+dur+.1)});
+}
+function gurgle(){if(!A)return;const t=A.currentTime,s=A.createBufferSource();s.buffer=noiseBuf(1.2);const f=A.createBiquadFilter();f.type='bandpass';f.frequency.value=420;f.Q.value=3;const am=A.createOscillator(),ag=A.createGain(),g=A.createGain();am.frequency.value=9;ag.gain.value=.18;am.connect(ag);ag.connect(g.gain);g.gain.value=.2;s.connect(f);f.connect(g);g.connect(M);s.start(t);am.start(t);s.stop(t+1.2);am.stop(t+1.2)}
+function shuffle(){const t=A.currentTime,s=A.createBufferSource();s.buffer=noiseBuf(.4);const f=A.createBiquadFilter();f.type='lowpass';f.frequency.value=180+Math.random()*120;const g=A.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.16,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.35);s.connect(f);f.connect(g);g.connect(M);s.start(t)}
+let xa=0;
+function extraAudio(){ // dragging footsteps, wet gurgles, and the occasional close groan
+  if(!A||xa)return;xa=1;
+  (function st(){setTimeout(()=>{if(!over)shuffle();st()},700+Math.random()*900)})();
+  (function gr(){setTimeout(()=>{moan();if(Math.random()<.5)setTimeout(gurgle,900);gr()},6000+Math.random()*7000)})();
+  (function bg(){setTimeout(()=>{moan(true);bg()},22000+Math.random()*20000)})();
+}
+addEventListener('pointerdown',()=>{initAudio();extraAudio();if(A&&A.state==='suspended')A.resume()});
+setTimeout(()=>sub('Click anywhere to turn the sound on.'),800);
+function sub(t){const s=$('#sub');s.textContent=t;s.classList.add('on');clearTimeout(subT);subT=setTimeout(()=>s.classList.remove('on'),5000)}
+addEventListener('pointermove',e=>{const i=$('#intro');i.style.setProperty('--mx',e.clientX+'px');i.style.setProperty('--my',e.clientY+'px')});
+function tick(){ // game loop: reads the LIVE attributes, so DevTools edits change the game
+  if(over||!started)return;
+  const n=performance.now();let inf=0,agg=0;
+  if(!trained){t0=n;spawnAt=n+9000;ent=0;$$('.bunker-sector[data-status=infected]').forEach(s=>s.dataset.since=n-1000)} // training: timers frozen until the first sterilize
+  $$('.bunker-sector').forEach(s=>{
+    const st=s.dataset.status,z=s.querySelectorAll('zombie-node');
+    if(s.dataset.locked==='true'&&(st==='sterilized'||st==='clean'||!z.length)){ // locked door re-seals the sector
+      if(st!=='aggressive')s.dataset.status='infected';if(!z.length)addZ(s,1);
+      if(!s.dataset.warned){s.dataset.warned=1;log(s.id+' is LOCKED: the door re-sealed it. Set data-locked to false.','r');tone(110,.4,'square')}
+      return;
+    }
+    if(st==='infected'||st==='aggressive'){
+      if(!z.length){s.dataset.status='sterilized';return}       // all zombie-nodes deleted => sterilized
+      if(st==='infected'){
+        const d=50-(n-(+s.dataset.since||n))/1000;s.dataset.decay=Math.max(0,Math.ceil(d));
+        if(d<=0){s.dataset.status='aggressive';s.dataset.spread=n;addZ(s,2);
+          if(s.dataset.survivor){const nm=s.dataset.survivor;delete s.dataset.survivor;integ-=15;sub(nm+' did not make it.');log(nm+' was lost. -15 containment','r')}moan(true);log(s.id+' MUTATED — spreading!','r')}
+        inf++;
+      }else{
+        agg++;
+        if(n-(+s.dataset.spread||n)>9000){s.dataset.spread=n;const c=adj(s).filter(x=>x.dataset.status==='clean');if(c.length){infect(c[Math.random()*c.length|0]);log('Infection spread from '+s.id,'r')}}
+      }
+    }else if(st==='sterilized'){
+      z.forEach(x=>x.remove());
+      if(!s.dataset.clean)s.dataset.clean=n+1500;
+      if(n>+s.dataset.clean){s.dataset.status='clean';s.dataset.decay='30';delete s.dataset.clean;delete s.dataset.locked;delete s.dataset.warned}
+    }else if(st==='clean')z.forEach(x=>x.remove());
+  });
+  const el=(n-t0)/1000;if(bi<BEATS.length&&el>=BEATS[bi][0])sub(BEATS[bi++][1]);
+  chaos(n);if(solo){thr=agg;if(stage!==pstage){pstage=stage;powerStage(stage)}document.body.classList.toggle('lowpwr',pw<30)}
+  if(stage===4){if(!fs)fs=n;if(integ<40)fs=n;const left=Math.max(0,90-(n-fs)/1000);$('#obj').textContent='STAGE 5 · FINAL STAND: hold the gate for '+Math.ceil(left)+'s with containment above 40%.';if(left<=0){endScreen(true,el);send('end',{win:true,time:el})}}
+  if(lock&&n>lock){lock=0;$('#lockdown').classList.remove('on')}
+  if(blackout&&Date.now()-lastEm>2800)setBlackout(false);
+  if(n>spawnAt){spawnAt=n+(lock?3000:Math.max(4500,8000-el*12));spawn()}
+  integ-=(inf*.3+agg*1.6+(lock?2:0))*.12*(trained?1:0)+(solo&&pw<30&&trained?.15:0);integ=Math.max(0,Math.min(100,integ));
+  $('#infN').textContent=inf;$('#aggN').textContent=agg;$('#integTxt').textContent=Math.round(integ);
+  const ib=$('#integ');ib.style.width=integ+'%';ib.style.background=integ<35?'var(--red)':'var(--grn)';
+  $('#clock').textContent='T+'+String(el/60|0).padStart(2,'0')+':'+String(Math.floor(el%60)).padStart(2,'0');
+  if(n-lastState>1000){lastState=n;send('state',{agg,inf,integ,stage,ent})}
+  if(integ<=0){endScreen(false);send('end',{win:false})}
+  else if(el>=WIN_AT){endScreen(true);send('end',{win:true})}
+}
+
+/* ---------- GAME: POWER & AIR SCRUBBERS ---------- */
+let pw=100,emerg=false,lastPw=0,thr=0,pn=0,chargeMode=false,charge=0,pstage=-1,heat=0,coolAt=0;
+function powerTick(){
+  if(over||!started)return;
+  const n=performance.now(),dt=(n-lastPw)/1000;lastPw=n;
+  pw=Math.max(0,pw-dt*(0.8+thr*.15)*(chargeMode?1.6:1));heat=Math.max(0,heat-dt*2.5);
+  if(heat>=100){heat=40;pw=Math.max(0,pw-30);siren(1500);log('REACTOR OVERHEAT! -30% power. Vent coolant!','r')}
+  $('#heat').style.width=Math.min(100,heat)+'%';$('#heatT').textContent=Math.round(heat);
+  if(chargeMode){charge=pw>=80?charge+dt:0;$('#pch').style.width=Math.min(100,charge/8*100)+'%';if(charge>=8){chargeMode=false;send('charged');$('#pot').textContent='Gate charged!';chime()}}
+  const r=$('#reactor');r.style.setProperty('--v',pw);r.classList.toggle('crit',pw<30);$('#pwTxt').textContent=Math.round(pw)+'%';
+  $$('#scr i').forEach((e,i)=>e.style.height=Math.max(4,pw*.6*(.6+((i*37)%5)/10))+'px');
+  if(pw<30){
+    if(!emerg){emerg=true;siren(2500);log('REACTOR CRITICAL under 30%!','r');if(!peerCount('radar'))log('No radar tab — blackout has no target','r')}
+    if(pn++%4===0)send('emergency',{power:pw});
+  }else if(emerg){emerg=false;send('restore');log('Reactor stable','g')}
+  const a=Math.round((now()-t0p)/1000);$('#clock').textContent='T+'+String(a/60|0).padStart(2,'0')+':'+String(a%60).padStart(2,'0');
+}
+let t0p=0;
+// Mechanic 2: Purifier Beacon — drag past the right edge to fire into the radar tab
+function initBeacon(){
+  const bc=$('#beacon');let d=null;
+  bc.onpointerdown=e=>{d={x:e.clientX-bc.offsetLeft,y:e.clientY-bc.offsetTop};bc.setPointerCapture(e.pointerId);bc.style.cursor='grabbing'};
+  bc.onpointermove=e=>{if(!d)return;bc.style.left=(e.clientX-d.x)+'px';bc.style.top=(e.clientY-d.y)+'px';bc.style.bottom='auto'};
+  bc.onpointerup=e=>{
+    if(!d)return;d=null;bc.style.cursor='grab';
+    if(e.clientX>=innerWidth-12){
+      if(solo){laser(Math.min(1,Math.max(0,e.clientY/innerHeight)));chime()}else if(!peerCount('radar')||!ch){log('BEACON LOST: no radar tab to receive it','r');tone(90,.6,'square')}
+      else{send('beacon',{y:Math.min(1,Math.max(0,e.clientY/innerHeight))});log('Beacon launched into the radar tab','g');chime()}
+    }
+    bc.style.left='30px';bc.style.top='auto';bc.style.bottom='30px';
+  };
+}
+
+/* ---------- boot / intro / flow ---------- */
+
+/* ===== HIGH SCORE: fastest escape, saved on this laptop ===== */
+const BKEY='haze_best_time';
+const fmtT=t=>{const T=Math.round(t*10),m=T/600|0,sec=(T%600)/10;return String(m).padStart(2,'0')+':'+(sec<10?'0':'')+sec.toFixed(1)};
+function getBest(){try{const v=parseFloat(localStorage.getItem(BKEY));return isFinite(v)?v:null}catch(e){return null}}
+function setBest(t){try{localStorage.setItem(BKEY,String(t))}catch(e){}}
+function showBest(){
+  const b=getBest();$('#bestT').textContent=b==null?'--:--':fmtT(b);const mb=$('#menuBest');if(mb)mb.textContent=b==null?'BEST ESCAPE TIME: --:--  (no record yet)':'BEST ESCAPE TIME: '+fmtT(b);
+  const e=$('#bbest');if(e)e.textContent=b==null?'No record yet. Set the first escape time.':'BEST ESCAPE TIME: '+fmtT(b)+'. Beat it.';
+}
+function showResult(win,time){
+  const e=$('#endS'),best=getBest();
+  if(!win){e.style.color='#8a8478';e.textContent=best==null?'No record yet. Escape to set one.':'Best escape so far: '+fmtT(best);return}
+  const t=time!=null?time:(performance.now()-t0)/1000;
+  if(best==null){setBest(t);e.style.color='#6fd08a';e.textContent='ESCAPE TIME '+fmtT(t)+'. First record set. Beat it next time.'}
+  else if(t<best){setBest(t);e.style.color='#6fd08a';e.textContent='NEW BEST! '+fmtT(t)+' ('+(best-t).toFixed(1)+'s faster than '+fmtT(best)+')'}
+  else{e.style.color='#d9a441';e.textContent='ESCAPE TIME '+fmtT(t)+'. Best is '+fmtT(best)+' ('+(t-best).toFixed(1)+'s slower). Beat it.'}
+  showBest();
+}
+showBest();
+function endScreen(win,time){
+  over=true;$('#end').classList.remove('hidden');$('#blackout').classList.remove('on');$('#lockdown').classList.remove('on');
+  const t=$('#endT');t.textContent=t.dataset.t=win?'YOU ESCAPED':'MELTDOWN';
+  $('#endP').textContent=win?'The gate opens. A helicopter lifts you out of the haze. Mara Voss survives Day 11.':'The reactor went critical. The city is purple.';
+  win?chime():siren(4000);showResult(win,time);
+}
+function pickRole(r){
+  role=r;document.body.dataset.role=r;initAudio();extraAudio();
+  $('#roleTxt').textContent=r==='radar'?'STATION: RADAR & DEFENSE':'STATION: POWER & SCRUBBERS';
+  
+  $('#scare').style.display='flex';moan(true);tone(45,1.2,'sine');
+  setTimeout(()=>{$('#scare').style.display='none';$('#intro').classList.add('hidden');$('#loading').classList.remove('hidden');runLoading()},900);
+  send('hello');netUpdate();
+  if(!ch)log('BroadcastChannel unavailable: single-tab mode','r');
+}
+function start(){
+  $('#brief').classList.add('hidden');document.body.classList.toggle('solo',solo);started=true;t0=performance.now();t0p=now();lastPw=performance.now();
+  if(role==='radar'){buildRadar();initEscape();if(solo){initBeacon();setInterval(powerTick,250)}log('Bunker online. Open DevTools (F12)...','g');spawn();setInterval(tick,250)}
+  else{initBeacon();log('Reactor online. Keep power above 30%.','g');setInterval(powerTick,250)}
+  netUpdate();
+}
+$('#bRadar').onclick=()=>pickRole('radar');$('#bPower').onclick=()=>pickRole('power');
+$('#bGo').onclick=start;$('#rPurge').onclick=()=>purgePress(solo?'radar':role);$('#pPurge').onclick=()=>purgePress(solo?'power':role);
+$('#pump').onclick=()=>{pw=Math.min(100,pw+5);heat+=9;tone(300,.1,'square')};
+$('#cool').onclick=()=>{if(performance.now()<coolAt)return;coolAt=performance.now()+5000;heat=Math.max(0,heat-45);$('#cool').disabled=true;setTimeout(()=>$('#cool').disabled=false,5000);tone(500,.3)};
+(function intro(){
+  const lines=['DAY 11. Quarantine Station 9, harbor district.','The haze rolled in with the evening tide. Purple, and sweet-smelling. By sunrise nobody in the street was breathing right.','Now the dead walk the lower levels, and the bunker mainframe is bleeding into its own markup.','Command went silent on Day 6. You are what is left of the night shift.',"<span class='r'>They are already inside the DOM.</span>"];
+  const b=$('#boot');let i=0;
+  for(let k=0;k<7;k++){const d=document.createElement('div');d.className='drip';d.style.left=(8+k*14+Math.random()*6)+'%';d.style.animationDelay=(Math.random()*5)+'s';$('#intro').appendChild(d)}
+  (function next(){if(i>=lines.length){setTimeout(()=>{
+      const want=new URLSearchParams(location.search).get('role');
+      if(want==='radar')$('#bRadar').style.boxShadow='0 0 0 2px #b3201f';else if(want==='power')$('#bPower').style.boxShadow='0 0 0 2px #b3201f';
+      $('#pick').classList.remove('hidden');$('#intro .glitch').classList.add('show')},500);return}
+    const d=document.createElement('div');b.appendChild(d);const html=lines[i++];
+    let c=0;(function ty(){c+=2;d.innerHTML=html.slice(0,c);if(c<html.length)setTimeout(ty,18);else setTimeout(next,260)})();
+  })();
+})();
+</script>
+</body></html>
